@@ -17,7 +17,7 @@ interface TarotCard {
   currentMeaning: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = '/api';
 
 export default function PredictionPage() {
   const [card, setCard] = useState<TarotCard | null>(null);
