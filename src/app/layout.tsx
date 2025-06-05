@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { GlobalStyles } from "@/components/GlobalStyles";
-import { TelegramProvider } from "@/components/TelegramProvider";
-import { ClientHtml } from "@/components/ClientHtml";
+import { RootLayoutClient } from "@/components/RootLayoutClient";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
 export const metadata: Metadata = {
   title: "Врата Судьбы | Таро предсказания",
@@ -17,17 +12,5 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <ClientHtml lang="ru">
-      <head>
-        <link rel="preconnect" href="https://api.dicebear.com" />
-      </head>
-      <body className={`${inter.className} antialiased`}>
-        <TelegramProvider>
-          <GlobalStyles />
-          {children}
-        </TelegramProvider>
-      </body>
-    </ClientHtml>
-  );
+  return <RootLayoutClient>{children}</RootLayoutClient>;
 }

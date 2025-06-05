@@ -24,10 +24,10 @@ interface TelegramWebApp {
   };
 }
 
-interface Window {
-  Telegram?: {
-    WebApp: TelegramWebApp;
-  };
-}
-
-export {}; 
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp: TelegramWebApp;
+    };
+  }
+} 
