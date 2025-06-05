@@ -10,6 +10,12 @@ export const useTelegramWebApp = () => {
         tg.ready();
         tg.expand();
         setWebApp(tg);
+
+        return () => {
+          if (tg.MainButton) {
+            tg.MainButton.hide();
+          }
+        };
       }
     }
   }, []);
