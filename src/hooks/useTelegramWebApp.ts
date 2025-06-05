@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 
 export const useTelegramWebApp = () => {
-  const [webApp, setWebApp] = useState<TelegramWebApp | null>(null);
+  const [webApp, setWebApp] = useState<typeof window.Telegram.WebApp | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const tg = window.Telegram?.WebApp;
+      const tg = window.Telegram.WebApp;
       if (tg) {
         tg.ready();
         tg.expand();
