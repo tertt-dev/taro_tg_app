@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import Script from "next/script";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin", "cyrillic"] });
+const playfair = Playfair_Display({ subsets: ["latin", "cyrillic"] });
 
 export const metadata: Metadata = {
-  title: "Таро Предсказания",
-  description: "Получите ваше персональное предсказание на картах Таро",
+  title: "Врата Судьбы | Таро предсказания",
+  description: "Получите персональное предсказание на картах Таро",
 };
 
 export default function RootLayout({
@@ -18,12 +18,14 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <head>
-        <Script 
-          src="https://telegram.org/js/telegram-web-app.js"
-          strategy="beforeInteractive"
-        />
+        <link rel="preconnect" href="https://api.dicebear.com" />
       </head>
-      <body className={`${inter.className} bg-gradient-to-br from-purple-900 via-black to-purple-950 text-white min-h-screen`}>
+      <body className={`${inter.className} antialiased`}>
+        <style jsx global>{`
+          .font-serif {
+            font-family: ${playfair.style.fontFamily};
+          }
+        `}</style>
         {children}
       </body>
     </html>
