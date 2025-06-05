@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
+import Image from 'next/image';
 
 interface TarotCard {
   name: string;
@@ -21,7 +22,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 export default function PredictionPage() {
   const [card, setCard] = useState<TarotCard | null>(null);
   const [loading, setLoading] = useState(true);
-  const tg = useTelegramWebApp();
+  const webApp = useTelegramWebApp();
 
   useEffect(() => {
     const fetchPrediction = async () => {
@@ -29,6 +30,12 @@ export default function PredictionPage() {
         const response = await fetch(`${API_URL}/api/get-prediction`);
         const data = await response.json();
         setCard(data);
+        
+        if (webApp) {
+          webApp.MainButton.text = "Получить новое предсказание";
+          webApp.MainButton.show();
+          webApp.MainButton.onClick(() => window.location.reload());
+        }
       } catch (error) {
         console.error('Error fetching prediction:', error);
       } finally {
@@ -37,7 +44,7 @@ export default function PredictionPage() {
     };
 
     fetchPrediction();
-  }, []);
+  }, [webApp]);
 
   if (loading) {
     return (
@@ -83,11 +90,12 @@ export default function PredictionPage() {
               transition={{ duration: 1 }}
               className="card w-full h-full rounded-lg bg-gradient-to-br from-purple-900 to-black flex flex-col items-center justify-center p-6 space-y-4"
             >
-              <div className="relative">
-                <img
+              <div className="relative w-32 h-32">
+                <Image
                   src={card.image}
                   alt={card.name}
-                  className="w-32 h-32 rounded-full border-2 border-purple-500/50 shadow-lg shadow-purple-500/20"
+                  fill
+                  className="rounded-full border-2 border-purple-500/50 shadow-lg shadow-purple-500/20 object-cover"
                 />
                 {card.isReversed && (
                   <motion.span

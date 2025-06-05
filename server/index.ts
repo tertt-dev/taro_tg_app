@@ -14,6 +14,8 @@ app.use(express.json());
 
 // Telegram Bot setup
 const botToken = process.env.TELEGRAM_BOT_TOKEN;
+const webAppUrl = process.env.NEXT_PUBLIC_WEBAPP_URL || 'https://taro-tg-app.vercel.app';
+
 let bot: TelegramBot | null = null;
 
 if (botToken) {
@@ -27,7 +29,7 @@ if (botToken) {
         bot.sendMessage(chatId, 'Добро пожаловать в Таро-бот! Нажмите кнопку ниже, чтобы получить предсказание.', {
           reply_markup: {
             inline_keyboard: [[
-              { text: 'Открыть Web App', web_app: { url: process.env.NEXT_PUBLIC_WEBAPP_URL || 'https://your-webapp-url.com' } }
+              { text: 'Открыть Web App', web_app: { url: webAppUrl } }
             ]]
           }
         });

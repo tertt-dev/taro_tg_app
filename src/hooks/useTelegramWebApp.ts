@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 export const useTelegramWebApp = () => {
-  const [webApp, setWebApp] = useState<any>(null);
+  const [webApp, setWebApp] = useState<TelegramWebApp | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
