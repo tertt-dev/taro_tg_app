@@ -6,9 +6,14 @@ import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 
 export default function Home() {
   const router = useRouter();
-  const tg = useTelegramWebApp();
+  const webApp = useTelegramWebApp();
 
   const handleGetPrediction = () => {
+    if (webApp) {
+      webApp.MainButton.text = "Вернуться на главную";
+      webApp.MainButton.show();
+      webApp.MainButton.onClick(() => router.push('/'));
+    }
     router.push('/prediction');
   };
 
@@ -20,7 +25,7 @@ export default function Home() {
         transition={{ duration: 0.8 }}
         className="max-w-4xl mx-auto space-y-8"
       >
-        <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-purple-400 to-gold-400 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold text-center gold-text">
           Добро пожаловать в Таро-бот
         </h1>
 
@@ -28,7 +33,7 @@ export default function Home() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleGetPrediction}
-          className="w-full py-4 px-8 bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
+          className="w-full py-4 px-8 mystical-border bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
         >
           Получить предсказание
         </motion.button>
@@ -40,7 +45,7 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.2 }}
-              className="aspect-[2/3] bg-gradient-to-br from-purple-800/50 to-black/50 rounded-xl p-4 backdrop-blur-sm border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 cursor-pointer"
+              className="aspect-[2/3] mystical-border bg-gradient-to-br from-purple-800/50 to-black/50 rounded-xl p-4 backdrop-blur-sm"
             >
               <div className="w-full h-full rounded-lg bg-gradient-to-br from-purple-900 to-black flex items-center justify-center">
                 <span className="text-purple-400">Карта Таро</span>
