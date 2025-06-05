@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import Script from 'next/script';
 
 type WebApp = NonNullable<typeof window.Telegram>['WebApp'];

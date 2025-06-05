@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Inter } from "next/font/google";
+import Head from 'next/head';
 import { GlobalStyles } from "@/components/GlobalStyles";
 import { TelegramProvider, useTelegramWebApp } from "@/components/TelegramProvider";
 
@@ -57,9 +58,9 @@ const LayoutContent = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <html lang="ru">
-      <head>
+      <Head>
         <link rel="preconnect" href="https://api.dicebear.com" />
-      </head>
+      </Head>
       <body 
         className={`${inter.className} antialiased`}
         style={styles}
@@ -93,9 +94,9 @@ export const RootLayoutClient = ({
   if (!mounted) {
     return (
       <html lang="ru">
-        <head>
+        <Head>
           <link rel="preconnect" href="https://api.dicebear.com" />
-        </head>
+        </Head>
         <body className={inter.className}>
           <LoadingScreen />
         </body>

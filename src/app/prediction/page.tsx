@@ -1,156 +1,120 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
+import { motion } from 'framer-motion';
+import { useTelegramWebApp } from '@/components/TelegramProvider';
+import { Header } from '@/components/Header';
 import { TarotCard } from '@/components/TarotCard';
 import { HistoryPanel } from '@/components/HistoryPanel';
-
-interface TarotCard {
-  name: string;
-  description: string;
-  image: string;
-  meaning: {
-    upright: string;
-    reversed: string;
-  };
-  isReversed: boolean;
-  currentMeaning: string;
-}
+import { generatePrediction } from '@/utils/predictions';
 
 interface Prediction {
   id: string;
-  card: TarotCard;
+  cards: {
+    name: string;
+    description: string;
+    isReversed: boolean;
+  }[];
   date: string;
+  text: string;
 }
 
 export default function PredictionPage() {
   const router = useRouter();
-  const [card, setCard] = useState<TarotCard | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { ready } = useTelegramWebApp();
   const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const webApp = useTelegramWebApp();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
-    // Загружаем историю предсказаний
-    const storedPredictions = localStorage.getItem('predictions');
-    if (storedPredictions) {
-      setPredictions(JSON.parse(storedPredictions).slice(-5));
+    if (!ready) {
+      router.push('/');
     }
+  }, [ready, router]);
 
-    const fetchPrediction = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch('/api/get-prediction');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setCard(data);
-        
-        // Сохраняем предсказание в историю
-        const newPrediction = {
-          id: Date.now().toString(),
-          card: data,
-          date: new Date().toISOString()
-        };
-        const updatedPredictions = [...predictions, newPrediction].slice(-5);
-        setPredictions(updatedPredictions);
-        localStorage.setItem('predictions', JSON.stringify(updatedPredictions));
+  useEffect(() => {
+    const savedPredictions = localStorage.getItem('predictions');
+    if (savedPredictions) {
+      setPredictions(JSON.parse(savedPredictions));
+    }
+  }, []);
 
-        if (webApp) {
-          webApp.MainButton.text = "Вернуться на главную";
-          webApp.MainButton.show();
-          webApp.MainButton.onClick(() => router.push('/'));
-        }
-      } catch (error) {
-        console.error('Error fetching prediction:', error);
-        setError('Не удалось получить предсказание. Попробуйте позже.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  useEffect(() => {
+    localStorage.setItem('predictions', JSON.stringify(predictions));
+  }, [predictions]);
 
-    fetchPrediction();
+  const handleNewPrediction = async () => {
+    setIsGenerating(true);
+    try {
+      const prediction = await generatePrediction();
+      setPredictions((prev) => [prediction, ...prev]);
+    } catch (error) {
+      console.error('Failed to generate prediction:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
-    return () => {
-      if (webApp?.MainButton) {
-        webApp.MainButton.hide();
-      }
-    };
-  }, [webApp]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="w-16 h-16 border-2 border-zinc-700 border-t-zinc-300 rounded-full"
-        />
-      </div>
-    );
-  }
-
-  if (error || !card) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <p className="text-red-400">{error || 'Ошибка при получении предсказания'}</p>
-      </div>
-    );
-  }
+  const toggleHistory = () => {
+    setShowHistory(!showHistory);
+  };
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800/20 via-zinc-900/20 to-black pointer-events-none" />
+    <div className="min-h-screen bg-black text-white">
+      <Header onHistoryClick={toggleHistory} />
       
-      <main className="relative z-10 container mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-md mx-auto space-y-8"
-        >
-          <h1 className="text-3xl font-serif text-center">
-            Ваше предсказание
-          </h1>
-
-          <div className="flex justify-center">
-            <TarotCard
-              name={card.name}
-              image={card.image}
-              isReversed={card.isReversed}
-              size="lg"
-            />
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-zinc-900/50 backdrop-blur-sm rounded-lg p-6 border border-zinc-800"
-          >
-            <h2 className="text-xl font-serif mb-2">
-              {card.name}
-              {card.isReversed && ' (Перевёрнута)'}
-            </h2>
-            <p className="text-zinc-300 leading-relaxed">{card.currentMeaning}</p>
-          </motion.div>
-
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex flex-col items-center justify-center">
           <motion.button
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => window.location.reload()}
-            className="w-full py-4 px-8 bg-gradient-to-r from-zinc-800 to-zinc-900 rounded-lg border border-zinc-700/50 shadow-lg hover:shadow-zinc-700/20 transition-all duration-300"
+            onClick={handleNewPrediction}
+            disabled={isGenerating}
+            className={`
+              px-6 py-3 rounded-lg bg-purple-600 text-white font-medium
+              transition-colors duration-200
+              ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'}
+            `}
+            whileHover={{ scale: isGenerating ? 1 : 1.05 }}
+            whileTap={{ scale: isGenerating ? 1 : 0.95 }}
           >
-            <span className="text-lg font-serif">Получить новое предсказание</span>
+            {isGenerating ? 'Гадаем...' : 'Получить предсказание'}
           </motion.button>
-        </motion.div>
 
-        <HistoryPanel predictions={predictions} />
+          {predictions.length > 0 && (
+            <div className="mt-8 w-full max-w-2xl">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-zinc-900 rounded-lg p-6"
+              >
+                <h2 className="text-xl font-semibold mb-4">
+                  {predictions[0].date}
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  {predictions[0].cards.map((card, index) => (
+                    <TarotCard
+                      key={index}
+                      name={card.name}
+                      description={card.description}
+                      isReversed={card.isReversed}
+                    />
+                  ))}
+                </div>
+                <p className="text-gray-300 leading-relaxed">
+                  {predictions[0].text}
+                </p>
+              </motion.div>
+            </div>
+          )}
+        </div>
       </main>
+
+      <HistoryPanel
+        isOpen={showHistory}
+        onClose={toggleHistory}
+        predictions={predictions}
+      />
     </div>
   );
 } 

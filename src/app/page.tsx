@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
+import { useTelegramWebApp } from '@/components/TelegramProvider';
 import { Header } from '@/components/Header';
 import { TarotCard } from '@/components/TarotCard';
 
@@ -15,8 +15,14 @@ const decorativeCards = [
 
 export default function Home() {
   const router = useRouter();
-  const webApp = useTelegramWebApp();
+  const { ready } = useTelegramWebApp();
   const [dailyCard, setDailyCard] = useState<any>(null);
+
+  useEffect(() => {
+    if (ready) {
+      router.push('/prediction');
+    }
+  }, [ready, router]);
 
   useEffect(() => {
     // Проверяем, была ли уже показана карта дня
