@@ -6,6 +6,11 @@
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 0, 0, 0;
   --background-end-rgb: 0, 0, 0;
+  --vh: 1vh;
+}
+
+.min-h-screen {
+  min-height: calc(var(--vh, 1vh) * 100);
 }
 
 body {

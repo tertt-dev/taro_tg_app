@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { GlobalStyles } from "@/components/GlobalStyles";
-import { TelegramScript } from "@/components/TelegramScript";
+import { TelegramProvider } from "@/components/TelegramProvider";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
@@ -22,9 +22,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://api.dicebear.com" />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <TelegramScript />
-        <GlobalStyles />
-        {children}
+        <TelegramProvider>
+          <GlobalStyles />
+          {children}
+        </TelegramProvider>
       </body>
     </html>
   );
