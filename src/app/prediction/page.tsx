@@ -17,17 +17,21 @@ interface TarotCard {
   currentMeaning: string;
 }
 
-const API_URL = '/api';
-
 export default function PredictionPage() {
   const [card, setCard] = useState<TarotCard | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const webApp = useTelegramWebApp();
 
   useEffect(() => {
     const fetchPrediction = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/get-prediction`);
+        setLoading(true);
+        setError(null);
+        const response = await fetch('/api/get-prediction');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         setCard(data);
         
@@ -38,12 +42,20 @@ export default function PredictionPage() {
         }
       } catch (error) {
         console.error('Error fetching prediction:', error);
+        setError('Не удалось получить предсказание. Попробуйте позже.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchPrediction();
+
+    // Cleanup function
+    return () => {
+      if (webApp?.MainButton) {
+        webApp.MainButton.hide();
+      }
+    };
   }, [webApp]);
 
   if (loading) {
@@ -58,10 +70,10 @@ export default function PredictionPage() {
     );
   }
 
-  if (!card) {
+  if (error || !card) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">Ошибка при получении предсказания</p>
+        <p className="text-red-500">{error || 'Ошибка при получении предсказания'}</p>
       </div>
     );
   }
