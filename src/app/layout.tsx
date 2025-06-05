@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter } from "next/font/google";
+import { GlobalStyles } from "@/components/GlobalStyles";
+import { TelegramScript } from "@/components/TelegramScript";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
-const playfair = Playfair_Display({ subsets: ["latin", "cyrillic"] });
 
 export const metadata: Metadata = {
   title: "Врата Судьбы | Таро предсказания",
@@ -21,11 +22,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://api.dicebear.com" />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <style jsx global>{`
-          .font-serif {
-            font-family: ${playfair.style.fontFamily};
-          }
-        `}</style>
+        <TelegramScript />
+        <GlobalStyles />
         {children}
       </body>
     </html>
