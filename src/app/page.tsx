@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useTelegramWebApp } from '@/components/TelegramProvider';
 import { Header } from '@/components/Header';
 import { TarotCard } from '@/components/TarotCard';
+import type { Card } from '@/utils/predictions';
 
 const decorativeCards = [
   { name: "Маг", image: "https://api.dicebear.com/7.x/identicon/svg?seed=magician" },
@@ -16,7 +17,7 @@ const decorativeCards = [
 export default function Home() {
   const router = useRouter();
   const { ready } = useTelegramWebApp();
-  const [dailyCard, setDailyCard] = useState<any>(null);
+  const [dailyCard, setDailyCard] = useState<Card | null>(null);
 
   useEffect(() => {
     if (ready) {

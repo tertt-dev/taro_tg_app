@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 interface TarotCardProps {
   name: string;
-  image: string;
+  image?: string;
   isReversed?: boolean;
   isInteractive?: boolean;
   size?: 'sm' | 'md' | 'lg';
@@ -18,7 +18,7 @@ const sizeClasses = {
 
 export const TarotCard = ({ 
   name, 
-  image, 
+  image = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(name)}`, 
   isReversed = false, 
   isInteractive = true,
   size = 'md',

@@ -7,18 +7,7 @@ import { useTelegramWebApp } from '@/components/TelegramProvider';
 import { Header } from '@/components/Header';
 import { TarotCard } from '@/components/TarotCard';
 import { HistoryPanel } from '@/components/HistoryPanel';
-import { generatePrediction } from '@/utils/predictions';
-
-interface Prediction {
-  id: string;
-  cards: {
-    name: string;
-    description: string;
-    isReversed: boolean;
-  }[];
-  date: string;
-  text: string;
-}
+import { generatePrediction, type Prediction } from '@/utils/predictions';
 
 export default function PredictionPage() {
   const router = useRouter();
@@ -96,7 +85,6 @@ export default function PredictionPage() {
                     <TarotCard
                       key={index}
                       name={card.name}
-                      description={card.description}
                       isReversed={card.isReversed}
                     />
                   ))}

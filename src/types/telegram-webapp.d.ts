@@ -1,4 +1,4 @@
-interface TelegramWebApp {
+export interface TelegramWebApp {
   ready: () => void;
   expand: () => void;
   close: () => void;
@@ -24,10 +24,12 @@ interface TelegramWebApp {
   };
 }
 
-interface Window {
-  Telegram?: {
-    WebApp: TelegramWebApp;
-  };
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp: TelegramWebApp;
+    };
+  }
 }
 
 export {}; 

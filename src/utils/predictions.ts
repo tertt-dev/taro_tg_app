@@ -1,10 +1,11 @@
-interface Card {
+export interface Card {
   name: string;
   description: string;
   isReversed: boolean;
+  image?: string;
 }
 
-interface Prediction {
+export interface Prediction {
   id: string;
   cards: Card[];
   date: string;
@@ -15,14 +16,17 @@ const CARDS = [
   {
     name: 'Шут',
     description: 'Новые начинания, спонтанность, свобода',
+    image: 'https://api.dicebear.com/7.x/identicon/svg?seed=fool'
   },
   {
     name: 'Маг',
     description: 'Сила воли, мастерство, проявление',
+    image: 'https://api.dicebear.com/7.x/identicon/svg?seed=magician'
   },
   {
     name: 'Верховная Жрица',
     description: 'Интуиция, тайны, внутреннее знание',
+    image: 'https://api.dicebear.com/7.x/identicon/svg?seed=priestess'
   },
   // Добавьте остальные карты по аналогии
 ];
