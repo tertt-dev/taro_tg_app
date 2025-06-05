@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { GlobalStyles } from "@/components/GlobalStyles";
 import { TelegramProvider } from "@/components/TelegramProvider";
+import { ClientHtml } from "@/components/ClientHtml";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
@@ -17,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ru">
+    <ClientHtml lang="ru">
       <head>
         <link rel="preconnect" href="https://api.dicebear.com" />
       </head>
@@ -27,6 +28,6 @@ export default function RootLayout({
           {children}
         </TelegramProvider>
       </body>
-    </html>
+    </ClientHtml>
   );
 }
