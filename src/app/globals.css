@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 23, 3, 33;
+  --background-end-rgb: 3, 0, 20;
 }
 
 @theme inline {
@@ -23,4 +26,52 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  color: rgb(var(--foreground-rgb));
+  background: radial-gradient(circle at top, rgb(var(--background-start-rgb)), rgb(var(--background-end-rgb)));
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.mystical-border {
+  position: relative;
+}
+
+.mystical-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #9f7aea, #4c1d95, #9f7aea);
+  border-radius: inherit;
+  z-index: -1;
+  animation: borderGlow 3s ease-in-out infinite;
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.card-container {
+  perspective: 1000px;
+}
+
+.card {
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.card.flipped {
+  transform: rotateY(180deg);
+}
+
+.gold-text {
+  background: linear-gradient(to right, #ffd700, #ffa500);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
