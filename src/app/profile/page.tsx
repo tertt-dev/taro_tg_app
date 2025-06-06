@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, History } from 'lucide-react';
 import { useTelegramWebApp } from '@/components/TelegramProvider';
 import Image from 'next/image';
+import { db } from '@/utils/db';
 
 interface Theme {
   id: 'light' | 'dark';
@@ -20,6 +21,7 @@ const themes: Theme[] = [
 export default function ProfilePage() {
   const { webApp } = useTelegramWebApp();
   const [theme, setTheme] = useState<Theme['id']>('dark');
+  const [predictionsCount, setPredictionsCount] = useState(0);
 
   // Handle BackButton in Telegram WebApp
   useEffect(() => {
@@ -35,6 +37,23 @@ export default function ProfilePage() {
       };
     }
   }, [webApp]);
+
+  // Initialize user data
+  useEffect(() => {
+    const user = webApp?.initDataUnsafe?.user;
+    if (user?.id) {
+      // Create or update user in database
+      db.createOrUpdateUser({
+        id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        username: user.username,
+        photo_url: user.photo_url,
+      });
+      // Get prediction count
+      setPredictionsCount(db.getPredictionCount(user.id));
+    }
+  }, [webApp?.initDataUnsafe?.user]);
 
   const handleThemeChange = (newTheme: Theme['id']) => {
     setTheme(newTheme);
@@ -75,7 +94,7 @@ export default function ProfilePage() {
                   unoptimized
                 />
               </div>
-              <div>
+              <div className="flex-1">
                 <h2 className="text-xl font-semibold">
                   {user.first_name}{' '}
                   {user.last_name}
@@ -85,6 +104,10 @@ export default function ProfilePage() {
                     @{user.username}
                   </p>
                 )}
+                <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                  <History className="w-4 h-4" />
+                  <span>{predictionsCount} предсказаний</span>
+                </div>
               </div>
             </div>
 

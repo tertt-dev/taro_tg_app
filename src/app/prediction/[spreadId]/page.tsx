@@ -54,6 +54,7 @@ export default function PredictionPage() {
 
   const startReading = (currentSpread: SpreadType) => {
     setIsLoading(true);
+    setSelectedCards([]);
     const cardCount = currentSpread.cardCount || 
       (currentSpread.id === 'random' ? Math.floor(Math.random() * 3) + 1 : 3);
 
@@ -75,6 +76,12 @@ export default function PredictionPage() {
         }
       }, i * 1000);
     });
+  };
+
+  const handleNewSpread = () => {
+    if (spread) {
+      startReading(spread);
+    }
   };
 
   if (!spread) return null;
@@ -119,7 +126,7 @@ export default function PredictionPage() {
             className="mx-auto mt-12 px-6 py-3 bg-primary/10 hover:bg-primary/20 rounded-lg flex items-center gap-2 transition-colors"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            onClick={() => router.push('/')}
+            onClick={handleNewSpread}
           >
             <span>Новый расклад</span>
           </motion.button>

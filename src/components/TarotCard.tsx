@@ -43,50 +43,68 @@ export function TarotCard({
       >
         {/* Card Back */}
         <div className="absolute w-full h-full backface-hidden">
-          <div className="w-full h-full glass-panel overflow-hidden border-2 border-[var(--accent-silver)] bg-gradient-to-br from-[#1a1a2e] to-[#000000]">
+          <div className="w-full h-full rounded-xl border-2 border-[#4a4a6a] bg-[#1a1a2e] overflow-hidden">
+            {/* Decorative Pattern */}
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute inset-0 grid grid-cols-4 gap-4 p-4">
+                {Array.from({ length: 16 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="aspect-square rounded-full border border-[#4a4a6a]"
+                  />
+                ))}
+              </div>
+            </div>
+            {/* Center Emblem */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <svg
-                className="w-24 h-24 text-[var(--accent-silver)] opacity-20"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <div className="w-24 h-24 rounded-full border-2 border-[#4a4a6a] flex items-center justify-center">
+                <svg
+                  className="w-12 h-12 text-[#4a4a6a]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 6V12L16 14"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Card Front */}
         <div className="absolute w-full h-full backface-hidden rotate-y-180">
-          <div className="w-full h-full glass-panel overflow-hidden border-2 border-[var(--accent-gold)]">
-            <div className="relative w-full h-full p-4 flex flex-col">
-              <div className="relative flex-1 mb-4">
-                <Image
-                  src={image}
-                  alt={name}
-                  fill
-                  className="object-contain"
-                  sizes={`(max-width: ${size === 'sm' ? '140px' : size === 'md' ? '280px' : '320px'}) 100vw`}
-                  priority
-                />
+          <div className="w-full h-full rounded-xl border-2 border-[#4a4a6a] bg-[#1a1a2e] overflow-hidden">
+            <Image
+              src={image}
+              alt={name}
+              width={size === 'sm' ? 140 : size === 'md' ? 280 : 320}
+              height={size === 'sm' ? 240 : size === 'md' ? 480 : 520}
+              className="w-full h-full object-cover"
+              unoptimized
+            />
+            {position && (
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                <div className="text-sm text-white/70 mb-1">
+                  {position}
+                </div>
+                <div className="text-lg font-medium text-white">
+                  {name}
+                </div>
               </div>
-              <div className="text-center">
-                <h3 className="text-xl font-semibold mb-2">{name}</h3>
-                {position && (
-                  <div className="text-sm text-[var(--text-secondary)] mb-2">{position}</div>
-                )}
-                <p className="text-sm text-[var(--text-secondary)]">
-                  {description}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </motion.div>

@@ -57,20 +57,32 @@ export function SpreadSelector({ onSelect }: SpreadSelectorProps) {
         <button
           key={spread.id}
           onClick={() => onSelect(spread)}
-          className="relative flex flex-col items-center p-4 rounded-xl bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-black/30 transition-all duration-200 group"
+          className="relative flex flex-col items-center p-4 rounded-xl bg-black/40 backdrop-blur-[20px] border border-white/10 hover:bg-black/50 transition-all duration-200 group overflow-hidden"
         >
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0 grid grid-cols-3 gap-2 p-2">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="aspect-square rounded-full border border-white/20"
+                />
+              ))}
+            </div>
+          </div>
+
           <div className="absolute -top-2 -right-2 text-2xl opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all">
             {spread.emoji}
           </div>
-          <div className="mb-2 text-primary group-hover:scale-110 transition-transform">
+          <div className="mb-2 text-primary group-hover:scale-110 transition-transform relative z-10">
             {spread.icon}
           </div>
-          <h3 className="text-lg font-medium mb-1">{spread.name}</h3>
-          <p className="text-xs text-muted-foreground text-center">
+          <h3 className="text-lg font-medium mb-1 relative z-10">{spread.name}</h3>
+          <p className="text-xs text-muted-foreground text-center relative z-10">
             {spread.description}
           </p>
           {spread.cardCount > 0 && (
-            <div className="mt-2 text-xs text-muted-foreground">
+            <div className="mt-2 text-xs text-muted-foreground relative z-10">
               {spread.cardCount} {spread.cardCount === 1 ? 'карта' : 'карты'}
             </div>
           )}

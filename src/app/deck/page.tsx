@@ -1,11 +1,54 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, X } from 'lucide-react';
 import { useTelegramWebApp } from '@/components/TelegramProvider';
 import { TarotCard } from '@/components/TarotCard';
 import { TAROT_CARDS } from '@/utils/predictions';
+
+interface CardDetailsProps {
+  card: typeof TAROT_CARDS[number];
+  onClose: () => void;
+}
+
+const CardDetails = ({ card, onClose }: CardDetailsProps) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+  >
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.9, opacity: 0 }}
+      className="bg-zinc-900/90 rounded-xl p-6 max-w-lg w-full relative"
+    >
+      <button
+        onClick={onClose}
+        className="absolute right-4 top-4 p-2 hover:bg-white/10 rounded-lg transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
+      <div className="flex flex-col items-center">
+        <div className="w-48 h-80 mb-6">
+          <TarotCard
+            {...card}
+            isRevealed={true}
+            onReveal={() => {}}
+            size="sm"
+            isInteractive={false}
+          />
+        </div>
+        <h2 className="text-2xl font-semibold mb-4">{card.name}</h2>
+        <p className="text-muted-foreground text-center leading-relaxed">
+          {card.description}
+        </p>
+      </div>
+    </motion.div>
+  </motion.div>
+);
 
 export default function DeckPage() {
   const { webApp } = useTelegramWebApp();
@@ -40,23 +83,36 @@ export default function DeckPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
           {TAROT_CARDS.map((card, index) => (
             <motion.div
               key={card.name}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: index * 0.05 }}
+              className="flex justify-center"
             >
-              <TarotCard
-                {...card}
-                isRevealed={selectedCard === index}
-                onReveal={() => setSelectedCard(index)}
-              />
+              <div className="w-36 h-60">
+                <TarotCard
+                  {...card}
+                  size="sm"
+                  isRevealed={true}
+                  onReveal={() => setSelectedCard(index)}
+                />
+              </div>
             </motion.div>
           ))}
         </div>
       </main>
+
+      <AnimatePresence>
+        {selectedCard !== null && (
+          <CardDetails
+            card={TAROT_CARDS[selectedCard]}
+            onClose={() => setSelectedCard(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 } 
