@@ -41,16 +41,19 @@ if (botToken) {
           photo_url: null as string | null
         };
 
+        // Store bot reference
+        const currentBot = bot;
+
         // Get user profile photos
-        bot.getUserProfilePhotos(user.id, { limit: 1 })
+        currentBot.getUserProfilePhotos(user.id, { limit: 1 })
           .then((photos) => {
             if (photos.photos.length > 0) {
-              return bot.getFileLink(photos.photos[0][0].file_id);
+              return currentBot.getFileLink(photos.photos[0][0].file_id);
             }
             return null;
           })
           .then((photoUrl) => {
-            if (!bot) return;
+            if (!currentBot) return;
             userData.photo_url = photoUrl;
             
             // Add user data to URL
@@ -58,7 +61,7 @@ if (botToken) {
               Buffer.from(JSON.stringify(userData)).toString('base64')
             );
 
-            bot.sendMessage(chatId, 'Добро пожаловать в Таро-бот! Нажмите кнопку ниже, чтобы получить предсказание.', {
+            currentBot.sendMessage(chatId, 'Добро пожаловать в Таро-бот! Нажмите кнопку ниже, чтобы получить предсказание.', {
               reply_markup: {
                 inline_keyboard: [[
                   { text: 'Открыть Web App', web_app: { url: webAppUrlWithData.toString() } }
@@ -67,14 +70,14 @@ if (botToken) {
             });
           })
           .catch((error) => {
-            if (!bot) return;
+            if (!currentBot) return;
             console.error('Error getting user photo:', error);
             // Send message without photo if error occurs
             webAppUrlWithData.searchParams.set('tgWebAppData', 
               Buffer.from(JSON.stringify(userData)).toString('base64')
             );
             
-            bot.sendMessage(chatId, 'Добро пожаловать в Таро-бот! Нажмите кнопку ниже, чтобы получить предсказание.', {
+            currentBot.sendMessage(chatId, 'Добро пожаловать в Таро-бот! Нажмите кнопку ниже, чтобы получить предсказание.', {
               reply_markup: {
                 inline_keyboard: [[
                   { text: 'Открыть Web App', web_app: { url: webAppUrlWithData.toString() } }

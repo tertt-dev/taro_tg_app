@@ -13,6 +13,15 @@ interface Theme {
   icon: typeof Sun | typeof Moon;
 }
 
+interface Prediction {
+  name: string;
+  image: string;
+  text: string;
+  date: string;
+  isReversed?: boolean;
+  currentMeaning?: string;
+}
+
 const themes: Theme[] = [
   { id: 'light', name: 'Светлая', icon: Sun },
   { id: 'dark', name: 'Тёмная', icon: Moon },
@@ -21,7 +30,7 @@ const themes: Theme[] = [
 export default function ProfilePage() {
   const { webApp, ready, error } = useTelegramWebApp();
   const [theme, setTheme] = useState<Theme['id']>('dark');
-  const [predictions, setPredictions] = useState<any[]>([]);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Handle BackButton in Telegram WebApp
