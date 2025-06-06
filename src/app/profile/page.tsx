@@ -44,6 +44,13 @@ export default function ProfilePage() {
     console.log('Profile page: checking user data...');
     const user = webApp?.initDataUnsafe?.user;
     console.log('Profile page: user data:', user);
+    console.log('Profile page: full webApp state:', {
+      ready,
+      error,
+      initDataUnsafe: webApp?.initDataUnsafe,
+      platform: webApp?.platform
+    });
+    
     if (user?.id) {
       console.log('Profile page: creating/updating user in database...');
       // Create or update user in database
@@ -58,9 +65,11 @@ export default function ProfilePage() {
       const count = db.getPredictionCount(user.id);
       console.log('Profile page: prediction count:', count);
       setPredictionsCount(count);
+    } else {
+      console.warn('Profile page: no user data available');
     }
     setIsLoading(false);
-  }, [webApp?.initDataUnsafe?.user]);
+  }, [webApp?.initDataUnsafe?.user, ready, error]);
 
   const handleThemeChange = (newTheme: Theme['id']) => {
     setTheme(newTheme);
@@ -74,7 +83,8 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
-          <p className="text-lg">Загрузка...</p>
+          <p className="text-lg">Инициализация приложения...</p>
+          <p className="text-sm text-muted-foreground mt-2">Пожалуйста, подождите</p>
         </div>
       </div>
     );
@@ -84,8 +94,11 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
-          <p className="text-lg text-red-500 mb-4">Ошибка загрузки данных</p>
-          <p className="text-muted-foreground">Пожалуйста, попробуйте перезапустить приложение</p>
+          <p className="text-lg text-red-500 mb-4">Ошибка инициализации</p>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <p className="text-sm text-muted-foreground">
+            Убедитесь, что вы открыли приложение через Telegram и попробуйте перезапустить его
+          </p>
         </div>
       </div>
     );
@@ -97,17 +110,28 @@ export default function ProfilePage() {
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
           <p className="text-lg">Загрузка профиля...</p>
+          <p className="text-sm text-muted-foreground mt-2">Получение данных пользователя</p>
         </div>
       </div>
     );
   }
 
-  if (!user) {
+  if (!webApp?.initDataUnsafe?.user) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <p className="text-lg text-yellow-500 mb-4">Данные пользователя недоступны</p>
-          <p className="text-muted-foreground">Пожалуйста, убедитесь что вы открыли приложение через Telegram</p>
+          <p className="text-muted-foreground mb-4">
+            Не удалось получить информацию о пользователе из Telegram
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Пожалуйста, убедитесь что вы:
+          </p>
+          <ul className="text-sm text-muted-foreground mt-2 space-y-1">
+            <li>• Открыли приложение через Telegram</li>
+            <li>• Используете актуальную версию Telegram</li>
+            <li>• Разрешили доступ к данным профиля</li>
+          </ul>
         </div>
       </div>
     );

@@ -26,13 +26,37 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         console.log('Initializing Telegram WebApp...');
         const app = window.Telegram?.WebApp;
         console.log('WebApp object:', app);
+        
         if (app) {
+          // Ensure we have the initData
+          if (!app.initDataUnsafe || !app.initDataUnsafe.user) {
+            console.warn('WebApp initialized but no user data available:', app.initDataUnsafe);
+            // Try to parse hash parameters for testing
+            try {
+              const hashParams = new URLSearchParams(window.location.hash.slice(1));
+              const tgWebAppData = hashParams.get('tgWebAppData');
+              if (tgWebAppData) {
+                console.log('Found tgWebAppData in URL:', tgWebAppData);
+                const parsedData = JSON.parse(decodeURIComponent(tgWebAppData));
+                if (parsedData.user) {
+                  app.initDataUnsafe = {
+                    ...app.initDataUnsafe,
+                    user: parsedData.user
+                  };
+                  console.log('Successfully parsed user data from URL');
+                }
+              }
+            } catch (parseError) {
+              console.warn('Failed to parse tgWebAppData:', parseError);
+            }
+          }
+
           setWebApp(app as unknown as TelegramWebApp);
           if (typeof app.ready === 'function') {
             console.log('Calling WebApp.ready()');
             app.ready();
           }
-          console.log('WebApp initialized successfully');
+          console.log('WebApp initialized successfully, initData:', app.initDataUnsafe);
           setReady(true);
           setError(null);
         } else {
