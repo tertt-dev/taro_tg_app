@@ -23,18 +23,24 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
+        console.log('Initializing Telegram WebApp...');
         const app = window.Telegram?.WebApp;
+        console.log('WebApp object:', app);
         if (app) {
           setWebApp(app as unknown as TelegramWebApp);
           if (typeof app.ready === 'function') {
+            console.log('Calling WebApp.ready()');
             app.ready();
           }
+          console.log('WebApp initialized successfully');
           setReady(true);
           setError(null);
         } else {
+          console.warn('Telegram WebApp is not available');
           setError('Telegram WebApp is not available');
         }
       } catch (err) {
+        console.error('Failed to initialize Telegram WebApp:', err);
         setError(err instanceof Error ? err.message : 'Failed to initialize Telegram WebApp');
       }
     }

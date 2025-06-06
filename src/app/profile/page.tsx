@@ -19,9 +19,10 @@ const themes: Theme[] = [
 ];
 
 export default function ProfilePage() {
-  const { webApp } = useTelegramWebApp();
+  const { webApp, ready, error } = useTelegramWebApp();
   const [theme, setTheme] = useState<Theme['id']>('dark');
   const [predictionsCount, setPredictionsCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Handle BackButton in Telegram WebApp
   useEffect(() => {
@@ -40,8 +41,11 @@ export default function ProfilePage() {
 
   // Initialize user data
   useEffect(() => {
+    console.log('Profile page: checking user data...');
     const user = webApp?.initDataUnsafe?.user;
+    console.log('Profile page: user data:', user);
     if (user?.id) {
+      console.log('Profile page: creating/updating user in database...');
       // Create or update user in database
       db.createOrUpdateUser({
         id: user.id,
@@ -51,8 +55,11 @@ export default function ProfilePage() {
         photo_url: user.photo_url,
       });
       // Get prediction count
-      setPredictionsCount(db.getPredictionCount(user.id));
+      const count = db.getPredictionCount(user.id);
+      console.log('Profile page: prediction count:', count);
+      setPredictionsCount(count);
     }
+    setIsLoading(false);
   }, [webApp?.initDataUnsafe?.user]);
 
   const handleThemeChange = (newTheme: Theme['id']) => {
@@ -61,6 +68,50 @@ export default function ProfilePage() {
   };
 
   const user = webApp?.initDataUnsafe?.user;
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
+          <p className="text-lg">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <p className="text-lg text-red-500 mb-4">Ошибка загрузки данных</p>
+          <p className="text-muted-foreground">Пожалуйста, попробуйте перезапустить приложение</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
+          <p className="text-lg">Загрузка профиля...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <p className="text-lg text-yellow-500 mb-4">Данные пользователя недоступны</p>
+          <p className="text-muted-foreground">Пожалуйста, убедитесь что вы открыли приложение через Telegram</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
