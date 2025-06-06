@@ -10,20 +10,18 @@ export default function HistoryPage() {
   const { webApp } = useTelegramWebApp();
   const [predictions, setPredictions] = useState<Prediction[]>([]);
 
-  // Show BackButton in Telegram WebApp
+  // Handle BackButton in Telegram WebApp
   useEffect(() => {
-    if (webApp?.BackButton) {
-      webApp.BackButton.show();
-      return () => {
-        webApp.BackButton.hide();
-      };
-    }
-  }, [webApp]);
+    const backButton = webApp?.BackButton;
+    if (backButton) {
+      backButton.show();
+      const handleBack = () => window.history.back();
+      backButton.onClick(handleBack);
 
-  // Handle back button click
-  useEffect(() => {
-    if (webApp?.BackButton) {
-      webApp.BackButton.onClick(() => window.history.back());
+      return () => {
+        backButton.hide();
+        backButton.offClick(handleBack);
+      };
     }
   }, [webApp]);
 
