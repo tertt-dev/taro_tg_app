@@ -49,7 +49,7 @@ interface TelegramWebApp {
   enableClosingConfirmation?(): void;
   disableClosingConfirmation?(): void;
   openTelegramLink?(url: string): void;
-  [key: string]: any; // Allow additional properties
+  [key: string]: unknown; // Use unknown instead of any for better type safety
 }
 
 interface TelegramType {
