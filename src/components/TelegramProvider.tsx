@@ -52,11 +52,21 @@ interface TelegramWebApp {
   sendData: (data: unknown) => void;
   enableClosingConfirmation: () => void;
   disableClosingConfirmation: () => void;
+  openTelegramLink: (url: string) => void;
 }
 
 interface TelegramContextType {
   webApp: TelegramWebApp | null;
   ready: boolean;
+}
+
+// Extend the Window interface
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: TelegramWebApp;
+    };
+  }
 }
 
 const TelegramContext = createContext<TelegramContextType>({
@@ -70,6 +80,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const app = (window as any).Telegram?.WebApp;
       if (app) {
         setWebApp(app);
