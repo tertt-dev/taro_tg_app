@@ -77,6 +77,33 @@
     @apply text-sm font-dm-sans text-[var(--text-secondary)] leading-relaxed relative;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   }
+
+  /* Card Back Animations */
+  .animate-spin-slow {
+    animation: spin 20s linear infinite;
+  }
+
+  .animate-spin-reverse-slow {
+    animation: spin-reverse 15s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes spin-reverse {
+    from {
+      transform: rotate(360deg);
+    }
+    to {
+      transform: rotate(0deg);
+    }
+  }
 }
 
 /* Particle container */

@@ -12,6 +12,8 @@ export interface TarotCardProps {
   onReveal: () => void;
   size?: 'sm' | 'md' | 'lg';
   isInteractive?: boolean;
+  showDescription?: boolean;
+  cardNumber?: string;
 }
 
 export function TarotCard({
@@ -23,6 +25,8 @@ export function TarotCard({
   onReveal,
   size = 'md',
   isInteractive = true,
+  showDescription = false,
+  cardNumber,
 }: TarotCardProps) {
   const cardSizes = {
     sm: 'w-[140px] h-[240px]',
@@ -30,57 +34,42 @@ export function TarotCard({
     lg: 'w-[320px] h-[520px]'
   };
 
+  const imageSizes = {
+    sm: { width: 140, height: 240 },
+    md: { width: 280, height: 480 },
+    lg: { width: 320, height: 520 }
+  };
+
+  const handleClick = () => {
+    if (isInteractive && !isRevealed) {
+      onReveal();
+    }
+  };
+
   return (
     <motion.div
       className={`relative ${cardSizes[size]} ${isInteractive ? 'cursor-pointer' : ''} perspective-1000`}
-      whileHover={isInteractive ? { scale: 1.02 } : undefined}
-      whileTap={isInteractive ? { scale: 0.98 } : undefined}
-      onClick={isInteractive ? onReveal : undefined}
+      whileHover={isInteractive && !isRevealed ? { scale: 1.02 } : undefined}
+      whileTap={isInteractive && !isRevealed ? { scale: 0.98 } : undefined}
+      onClick={handleClick}
     >
       <motion.div
-        className="w-full h-full relative preserve-3d transition-transform duration-700"
+        className="w-full h-full relative transform-style-preserve-3d transition-transform duration-700"
         animate={{ rotateY: isRevealed ? '180deg' : '0deg' }}
       >
         {/* Card Back */}
         <div className="absolute w-full h-full backface-hidden">
-          <div className="w-full h-full rounded-xl border-2 border-[#4a4a6a] bg-[#1a1a2e] overflow-hidden">
-            {/* Decorative Pattern */}
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute inset-0 grid grid-cols-4 gap-4 p-4">
-                {Array.from({ length: 16 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="aspect-square rounded-full border border-[#4a4a6a]"
-                  />
-                ))}
-              </div>
-            </div>
-            {/* Center Emblem */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-24 h-24 rounded-full border-2 border-[#4a4a6a] flex items-center justify-center">
-                <svg
-                  className="w-12 h-12 text-[#4a4a6a]"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 6V12L16 14"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            </div>
+          <div className="w-full h-full rounded-xl border-2 border-[#6a4a7a] bg-gradient-to-br from-[#1a1a2e] via-[#2a1a3e] to-[#1a1a2e] overflow-hidden">
+            <Image
+              src="/Cards-png/CardBacks.png"
+              alt="Card Back"
+              width={imageSizes[size].width}
+              height={imageSizes[size].height}
+              className="w-full h-full object-cover"
+              priority={true}
+              quality={90}
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e]/30 via-[#2a1a3e]/30 to-[#1a1a2e]/30" />
           </div>
         </div>
 
@@ -90,21 +79,30 @@ export function TarotCard({
             <Image
               src={image}
               alt={name}
-              width={size === 'sm' ? 140 : size === 'md' ? 280 : 320}
-              height={size === 'sm' ? 240 : size === 'md' ? 480 : 520}
+              width={imageSizes[size].width}
+              height={imageSizes[size].height}
               className="w-full h-full object-cover"
-              unoptimized
+              loading="lazy"
+              quality={90}
             />
-            {position && (
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent">
+              {position && (
                 <div className="text-sm text-white/70 mb-1">
                   {position}
                 </div>
-                <div className="text-lg font-medium text-white">
-                  {name}
-                </div>
+              )}
+              <div className="text-lg font-medium text-white flex items-center gap-2">
+                {cardNumber && (
+                  <span className="text-sm text-white/70">{cardNumber}</span>
+                )}
+                {name}
               </div>
-            )}
+              {showDescription && (
+                <p className="text-sm text-white/70 mt-1 line-clamp-2">
+                  {description}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </motion.div>

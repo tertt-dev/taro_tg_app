@@ -98,6 +98,7 @@ export default function DeckPage() {
                   size="sm"
                   isRevealed={true}
                   onReveal={() => setSelectedCard(index)}
+                  showDescription={true}
                 />
               </div>
             </motion.div>

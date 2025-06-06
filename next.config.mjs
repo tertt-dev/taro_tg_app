@@ -4,11 +4,14 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'api.dicebear.com',
-        pathname: '/7.x/**',
+        hostname: 't.me',
+        port: '',
+        pathname: '/i/**',
       },
     ],
+    deviceSizes: [140, 280, 320, 480, 520],
+    imageSizes: [140, 280, 320, 480, 520],
   },
-}
+};
 
 export default nextConfig; 

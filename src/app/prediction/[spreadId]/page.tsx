@@ -6,33 +6,20 @@ import { motion } from 'framer-motion';
 import { spreads, SpreadType } from '@/components/SpreadSelector';
 import { TarotCard } from '@/components/TarotCard';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { TAROT_CARDS } from '@/utils/predictions';
 
-interface TarotCardData {
-  name: string;
-  image: string;
-  description: string;
-}
-
-const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjQ4MCIgdmlld0JveD0iMCAwIDI4MCA0ODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI4MCIgaGVpZ2h0PSI0ODAiIGZpbGw9IiMxYTFhMmUiLz48L3N2Zz4=';
-
-const TAROT_CARDS: TarotCardData[] = [
-  {
-    name: 'Шут',
-    image: PLACEHOLDER_IMAGE,
-    description: 'Новые начинания, спонтанность, свобода'
-  },
-  {
-    name: 'Маг',
-    image: PLACEHOLDER_IMAGE,
-    description: 'Сила воли, мастерство, проявление'
-  },
-  {
-    name: 'Верховная Жрица',
-    image: PLACEHOLDER_IMAGE,
-    description: 'Интуиция, тайны, внутренняя мудрость'
+function getPositionLabel(spreadId: string, position: number): string {
+  switch (spreadId) {
+    case 'love':
+      return ['Чувства', 'Препятствия', 'Перспектива'][position];
+    case 'work':
+      return ['Текущее положение', 'Вызовы', 'Совет'][position];
+    case 'daily':
+      return 'Энергия дня';
+    default:
+      return `Позиция ${position + 1}`;
   }
-  // Add more cards here
-];
+}
 
 export default function PredictionPage() {
   const params = useParams();
@@ -93,7 +80,6 @@ export default function PredictionPage() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
       >
-        <div className="text-2xl mb-2">{spread.emoji}</div>
         <h1 className="text-3xl font-bold mb-2">{spread.name}</h1>
         <p className="text-muted-foreground">{spread.description}</p>
       </motion.div>
@@ -105,19 +91,22 @@ export default function PredictionPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
-            {TAROT_CARDS.slice(0, spread.cardCount || 3).map((card, index) => (
-              <TarotCard
-                key={card.name}
-                {...card}
-                position={getPositionLabel(spread.id, index)}
-                isRevealed={selectedCards.includes(index)}
-                onReveal={() => {
-                  if (!selectedCards.includes(index)) {
-                    setSelectedCards(prev => [...prev, index]);
-                  }
-                }}
-              />
-            ))}
+            {Array.from({ length: spread.cardCount || 3 }).map((_, index) => {
+              const card = TAROT_CARDS[selectedCards[index]] || TAROT_CARDS[0];
+              return (
+                <TarotCard
+                  key={index}
+                  {...card}
+                  position={getPositionLabel(spread.id, index)}
+                  isRevealed={selectedCards.includes(index)}
+                  onReveal={() => {
+                    if (!selectedCards.includes(index)) {
+                      setSelectedCards(prev => [...prev, index]);
+                    }
+                  }}
+                />
+              );
+            })}
           </div>
         )}
 
@@ -134,17 +123,4 @@ export default function PredictionPage() {
       </div>
     </div>
   );
-}
-
-function getPositionLabel(spreadId: string, position: number): string {
-  switch (spreadId) {
-    case 'love':
-      return ['Чувства', 'Препятствия', 'Перспектива'][position];
-    case 'work':
-      return ['Текущее положение', 'Вызовы', 'Совет'][position];
-    case 'daily':
-      return 'Энергия дня';
-    default:
-      return `Позиция ${position + 1}`;
-  }
 } 

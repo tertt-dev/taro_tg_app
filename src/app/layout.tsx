@@ -1,7 +1,6 @@
 import './globals.css'
 import { Inter, Cormorant, DM_Sans } from 'next/font/google'
-import { ParticlesBackground } from '@/components/ParticlesBackground'
-import { BottomNav } from '@/components/BottomNav'
+import { ClientWrapper } from '@/components/ClientWrapper'
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' })
 const cormorant = Cormorant({ 
@@ -28,13 +27,9 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={`${inter.variable} ${cormorant.variable} ${dmSans.variable} min-h-screen overflow-x-hidden bg-black`}>
-        <main className="relative z-0">
+        <ClientWrapper>
           {children}
-        </main>
-        <div className="fixed inset-0 z-[5] pointer-events-none">
-          <ParticlesBackground />
-        </div>
-        <BottomNav />
+        </ClientWrapper>
       </body>
     </html>
   )
