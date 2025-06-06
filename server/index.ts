@@ -24,8 +24,65 @@ if (botToken) {
     
     // Bot commands
     bot.onText(/\/start/, (msg: TelegramBot.Message) => {
-      if (bot) {
-        const chatId = msg.chat.id;
+      if (!bot) return;
+
+      const chatId = msg.chat.id;
+      const user = msg.from;
+      
+      // Create WebApp URL with user data
+      const webAppUrlWithData = new URL(webAppUrl);
+      if (user) {
+        const userData = {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          username: user.username,
+          language_code: user.language_code,
+          photo_url: null as string | null
+        };
+
+        // Get user profile photos
+        bot.getUserProfilePhotos(user.id, { limit: 1 })
+          .then((photos) => {
+            if (photos.photos.length > 0) {
+              return bot.getFileLink(photos.photos[0][0].file_id);
+            }
+            return null;
+          })
+          .then((photoUrl) => {
+            if (!bot) return;
+            userData.photo_url = photoUrl;
+            
+            // Add user data to URL
+            webAppUrlWithData.searchParams.set('tgWebAppData', 
+              Buffer.from(JSON.stringify(userData)).toString('base64')
+            );
+
+            bot.sendMessage(chatId, 'Добро пожаловать в Таро-бот! Нажмите кнопку ниже, чтобы получить предсказание.', {
+              reply_markup: {
+                inline_keyboard: [[
+                  { text: 'Открыть Web App', web_app: { url: webAppUrlWithData.toString() } }
+                ]]
+              }
+            });
+          })
+          .catch((error) => {
+            if (!bot) return;
+            console.error('Error getting user photo:', error);
+            // Send message without photo if error occurs
+            webAppUrlWithData.searchParams.set('tgWebAppData', 
+              Buffer.from(JSON.stringify(userData)).toString('base64')
+            );
+            
+            bot.sendMessage(chatId, 'Добро пожаловать в Таро-бот! Нажмите кнопку ниже, чтобы получить предсказание.', {
+              reply_markup: {
+                inline_keyboard: [[
+                  { text: 'Открыть Web App', web_app: { url: webAppUrlWithData.toString() } }
+                ]]
+              }
+            });
+          });
+      } else {
         bot.sendMessage(chatId, 'Добро пожаловать в Таро-бот! Нажмите кнопку ниже, чтобы получить предсказание.', {
           reply_markup: {
             inline_keyboard: [[
