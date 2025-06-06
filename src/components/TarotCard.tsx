@@ -11,7 +11,6 @@ interface TarotCardProps {
 }
 
 export function TarotCard({ name, image, isRevealed = false, onReveal }: TarotCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleClick = () => {
@@ -26,8 +25,6 @@ export function TarotCard({ name, image, isRevealed = false, onReveal }: TarotCa
       className="relative w-[280px] h-[480px] cursor-pointer"
       style={{ perspective: '1000px' }}
       onClick={handleClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <div
         className="relative w-full h-full transition-transform duration-700"
