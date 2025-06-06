@@ -2,28 +2,31 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { TelegramWebApp } from '@/types/telegram';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TelegramContextType {
   webApp: TelegramWebApp | null;
   ready: boolean;
   error: string | null;
+  isAuthenticated: boolean;
 }
 
 const TelegramContext = createContext<TelegramContextType>({
   webApp: null,
   ready: false,
-  error: null
+  error: null,
+  isAuthenticated: false
 });
 
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [webApp, setWebApp] = useState<TelegramWebApp | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated, authenticate, isLoading, error: authError } = useAuth();
 
   useEffect(() => {
     console.log('TelegramProvider: Initializing...');
     
-    // Try to initialize from Telegram WebApp
     if (typeof window !== 'undefined') {
       try {
         console.log('Checking for Telegram WebApp...');
@@ -32,7 +35,6 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         
         if (app) {
           console.log('WebApp found, initializing...');
-          // Cast to TelegramWebApp type since we know it's the correct shape
           const webAppInstance = app as unknown as TelegramWebApp;
           setWebApp(webAppInstance);
           
@@ -46,35 +48,27 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
             webAppInstance.expand();
           }
           
-          // Try to get user data from URL if not available in WebApp
-          if (!webAppInstance.initDataUnsafe?.user) {
-            try {
-              const params = new URLSearchParams(window.location.search);
-              const tgWebAppData = params.get('tgWebAppData');
-              if (tgWebAppData) {
-                console.log('Found tgWebAppData in URL');
-                const parsedData = JSON.parse(atob(tgWebAppData));
-                console.log('Parsed user data:', parsedData);
-                webAppInstance.initDataUnsafe = {
-                  ...webAppInstance.initDataUnsafe,
-                  user: parsedData
-                };
+          // Authenticate using initData
+          authenticate(webAppInstance.initData || '')
+            .then(success => {
+              if (success) {
+                console.log('Authentication successful');
+                setReady(true);
+                setError(null);
+              } else {
+                setError('Authentication failed');
               }
-            } catch (error) {
-              console.error('Failed to parse URL data:', error);
-            }
-          }
+            })
+            .catch(err => {
+              console.error('Authentication error:', err);
+              setError('Authentication failed');
+            });
           
-          console.log('WebApp initialization complete');
-          console.log('User data:', webAppInstance.initDataUnsafe?.user);
-          setReady(true);
-          setError(null);
         } else {
           const errorMsg = 'Telegram WebApp is not available';
           console.warn(errorMsg);
           setError(errorMsg);
           
-          // If we're not in Telegram, we might want to show a message or redirect
           if (!window.Telegram) {
             console.log('Not running in Telegram WebApp environment');
           }
@@ -90,7 +84,8 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const value = {
     webApp,
     ready,
-    error
+    error: error || authError,
+    isAuthenticated
   };
 
   console.log('TelegramProvider state:', value);
