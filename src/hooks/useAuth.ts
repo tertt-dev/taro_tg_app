@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
-import { TelegramWebApp } from '@/types/telegram';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -19,7 +18,7 @@ export const useAuth = () => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       
-      const response = await axios.post('/api/auth/signin', { initData }, {
+      await axios.post('/api/auth/signin', { initData }, {
         withCredentials: true // Important for handling cookies
       });
 
@@ -42,7 +41,7 @@ export const useAuth = () => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await axios.get('/api/auth/protected', {
+      await axios.get('/api/auth/check', {
         withCredentials: true
       });
       

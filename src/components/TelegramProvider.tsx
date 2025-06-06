@@ -22,7 +22,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [webApp, setWebApp] = useState<TelegramWebApp | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated, authenticate, isLoading, error: authError } = useAuth();
+  const { isAuthenticated, authenticate, error: authError } = useAuth();
 
   useEffect(() => {
     console.log('TelegramProvider: Initializing...');
@@ -79,7 +79,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         setError(errorMsg);
       }
     }
-  }, []);
+  }, [authenticate]);
 
   const value = {
     webApp,
