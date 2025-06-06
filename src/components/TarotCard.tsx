@@ -8,22 +8,39 @@ interface TarotCardProps {
   image: string;
   isRevealed?: boolean;
   isReversed?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  isInteractive?: boolean;
   onReveal?: () => void;
 }
 
-export function TarotCard({ name, image, isRevealed = false, isReversed = false, onReveal }: TarotCardProps) {
+export function TarotCard({ 
+  name, 
+  image, 
+  isRevealed = false, 
+  isReversed = false,
+  size = 'md',
+  isInteractive = true,
+  onReveal 
+}: TarotCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleClick = () => {
+    if (!isInteractive) return;
     setIsFlipped(!isFlipped);
     if (onReveal && !isRevealed) {
       onReveal();
     }
   };
 
+  const cardSizes = {
+    sm: 'w-[140px] h-[240px]',
+    md: 'w-[280px] h-[480px]',
+    lg: 'w-[320px] h-[520px]'
+  };
+
   return (
     <div
-      className="relative w-[280px] h-[480px] cursor-pointer"
+      className={`relative ${cardSizes[size]} ${isInteractive ? 'cursor-pointer' : ''}`}
       style={{ perspective: '1000px' }}
       onClick={handleClick}
     >
