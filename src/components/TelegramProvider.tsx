@@ -21,57 +21,82 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('TelegramProvider: Initializing...');
+    
+    // Try to initialize from Telegram WebApp
     if (typeof window !== 'undefined') {
       try {
-        console.log('Initializing Telegram WebApp...');
+        console.log('Checking for Telegram WebApp...');
         const app = window.Telegram?.WebApp;
         console.log('WebApp object:', app);
         
         if (app) {
-          // Ensure we have the initData
-          if (!app.initDataUnsafe || !app.initDataUnsafe.user) {
-            console.warn('WebApp initialized but no user data available:', app.initDataUnsafe);
-            // Try to parse hash parameters for testing
+          console.log('WebApp found, initializing...');
+          // Cast to TelegramWebApp type since we know it's the correct shape
+          const webAppInstance = app as unknown as TelegramWebApp;
+          setWebApp(webAppInstance);
+          
+          if (typeof webAppInstance.ready === 'function') {
+            console.log('Calling WebApp.ready()');
+            webAppInstance.ready();
+          }
+          
+          if (typeof webAppInstance.expand === 'function') {
+            console.log('Expanding WebApp view');
+            webAppInstance.expand();
+          }
+          
+          // Try to get user data from URL if not available in WebApp
+          if (!webAppInstance.initDataUnsafe?.user) {
             try {
-              const hashParams = new URLSearchParams(window.location.hash.slice(1));
-              const tgWebAppData = hashParams.get('tgWebAppData');
+              const params = new URLSearchParams(window.location.search);
+              const tgWebAppData = params.get('tgWebAppData');
               if (tgWebAppData) {
-                console.log('Found tgWebAppData in URL:', tgWebAppData);
-                const parsedData = JSON.parse(decodeURIComponent(tgWebAppData));
-                if (parsedData.user) {
-                  app.initDataUnsafe = {
-                    ...app.initDataUnsafe,
-                    user: parsedData.user
-                  };
-                  console.log('Successfully parsed user data from URL');
-                }
+                console.log('Found tgWebAppData in URL');
+                const parsedData = JSON.parse(atob(tgWebAppData));
+                console.log('Parsed user data:', parsedData);
+                webAppInstance.initDataUnsafe = {
+                  ...webAppInstance.initDataUnsafe,
+                  user: parsedData
+                };
               }
-            } catch (parseError) {
-              console.warn('Failed to parse tgWebAppData:', parseError);
+            } catch (error) {
+              console.error('Failed to parse URL data:', error);
             }
           }
-
-          setWebApp(app as unknown as TelegramWebApp);
-          if (typeof app.ready === 'function') {
-            console.log('Calling WebApp.ready()');
-            app.ready();
-          }
-          console.log('WebApp initialized successfully, initData:', app.initDataUnsafe);
+          
+          console.log('WebApp initialization complete');
+          console.log('User data:', webAppInstance.initDataUnsafe?.user);
           setReady(true);
           setError(null);
         } else {
-          console.warn('Telegram WebApp is not available');
-          setError('Telegram WebApp is not available');
+          const errorMsg = 'Telegram WebApp is not available';
+          console.warn(errorMsg);
+          setError(errorMsg);
+          
+          // If we're not in Telegram, we might want to show a message or redirect
+          if (!window.Telegram) {
+            console.log('Not running in Telegram WebApp environment');
+          }
         }
       } catch (err) {
-        console.error('Failed to initialize Telegram WebApp:', err);
-        setError(err instanceof Error ? err.message : 'Failed to initialize Telegram WebApp');
+        const errorMsg = err instanceof Error ? err.message : 'Failed to initialize Telegram WebApp';
+        console.error('Initialization error:', errorMsg);
+        setError(errorMsg);
       }
     }
   }, []);
 
+  const value = {
+    webApp,
+    ready,
+    error
+  };
+
+  console.log('TelegramProvider state:', value);
+
   return (
-    <TelegramContext.Provider value={{ webApp, ready, error }}>
+    <TelegramContext.Provider value={value}>
       {children}
     </TelegramContext.Provider>
   );

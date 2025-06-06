@@ -49,7 +49,7 @@ interface TelegramWebApp {
   enableClosingConfirmation?(): void;
   disableClosingConfirmation?(): void;
   openTelegramLink?(url: string): void;
-  [key: string]: unknown; // Use unknown instead of any for better type safety
+  [key: string]: unknown;
 }
 
 interface TelegramType {
@@ -58,9 +58,7 @@ interface TelegramType {
 
 declare global {
   interface Window {
-    Telegram?: {
-      WebApp?: TelegramWebApp;
-    };
+    Telegram?: TelegramType;
   }
 }
 
