@@ -87,7 +87,7 @@ export default function PredictionPage() {
                     <TarotCard
                       key={index}
                       name={card.name}
-                      image={`https://api.dicebear.com/7.x/identicon/svg?seed=${card.name.toLowerCase().replace(/\s+/g, '-')}`}
+                      image={card.image}
                       description={card.description || ''}
                       isRevealed={revealedCards.includes(index)}
                       onReveal={() => {

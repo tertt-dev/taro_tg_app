@@ -13,20 +13,22 @@ interface TarotCardData {
   description: string;
 }
 
+const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjQ4MCIgdmlld0JveD0iMCAwIDI4MCA0ODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI4MCIgaGVpZ2h0PSI0ODAiIGZpbGw9IiMxYTFhMmUiLz48L3N2Zz4=';
+
 const TAROT_CARDS: TarotCardData[] = [
   {
     name: 'Шут',
-    image: '/cards/fool.svg',
+    image: PLACEHOLDER_IMAGE,
     description: 'Новые начинания, спонтанность, свобода'
   },
   {
     name: 'Маг',
-    image: '/cards/magician.svg',
+    image: PLACEHOLDER_IMAGE,
     description: 'Сила воли, мастерство, проявление'
   },
   {
     name: 'Верховная Жрица',
-    image: '/cards/high-priestess.svg',
+    image: PLACEHOLDER_IMAGE,
     description: 'Интуиция, тайны, внутренняя мудрость'
   }
   // Add more cards here
