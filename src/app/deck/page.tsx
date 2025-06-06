@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useTelegramWebApp } from '@/components/TelegramProvider';
@@ -11,11 +11,19 @@ export default function DeckPage() {
   const { webApp } = useTelegramWebApp();
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
 
-  // Show BackButton in Telegram WebApp
-  if (webApp) {
-    webApp.BackButton.show();
-    webApp.BackButton.onClick(() => window.history.back());
-  }
+  useEffect(() => {
+    const backButton = webApp?.BackButton;
+    if (backButton) {
+      backButton.show();
+      const handleBack = () => window.history.back();
+      backButton.onClick(handleBack);
+
+      return () => {
+        backButton.hide();
+        backButton.offClick(handleBack);
+      };
+    }
+  }, [webApp]);
 
   return (
     <div className="min-h-screen bg-black text-white">
