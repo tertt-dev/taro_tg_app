@@ -58,6 +58,7 @@ interface TelegramWebApp {
 interface TelegramContextType {
   webApp: TelegramWebApp | null;
   ready: boolean;
+  error: string | null;
 }
 
 // Extend the Window interface
@@ -72,26 +73,35 @@ declare global {
 const TelegramContext = createContext<TelegramContextType>({
   webApp: null,
   ready: false,
+  error: null
 });
 
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [webApp, setWebApp] = useState<TelegramWebApp | null>(null);
   const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const app = (window as any).Telegram?.WebApp;
-      if (app) {
-        setWebApp(app);
-        app.ready();
-        setReady(true);
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const app = (window as any).Telegram?.WebApp;
+        if (app) {
+          setWebApp(app);
+          app.ready();
+          setReady(true);
+          setError(null);
+        } else {
+          setError('Telegram WebApp is not available');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to initialize Telegram WebApp');
       }
     }
   }, []);
 
   return (
-    <TelegramContext.Provider value={{ webApp, ready }}>
+    <TelegramContext.Provider value={{ webApp, ready, error }}>
       {children}
     </TelegramContext.Provider>
   );

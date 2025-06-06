@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Inter } from "next/font/google";
 import Head from 'next/head';
 import { GlobalStyles } from "@/components/GlobalStyles";
@@ -9,22 +10,56 @@ import { TelegramProvider, useTelegramWebApp } from "@/components/TelegramProvid
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
 const LoadingScreen = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
-      <p className="text-gray-400">Загрузка приложения...</p>
+  <div className="fixed inset-0 bg-black flex items-center justify-center">
+    <div className="text-white text-center">
+      <div className="mb-4">
+        <svg
+          className="animate-spin h-10 w-10 text-purple-500 mx-auto"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          />
+        </svg>
+      </div>
+      <p className="text-lg">Загрузка...</p>
     </div>
   </div>
 );
 
-const ErrorScreen = ({ error }: { error: Error }) => (
-  <div className="flex items-center justify-center min-h-screen p-4">
-    <div className="text-center max-w-md">
-      <h1 className="text-xl font-bold mb-2">Ошибка инициализации</h1>
-      <p className="text-gray-400 mb-4">{error.message}</p>
-      <p className="text-sm text-gray-500">
-        Пожалуйста, убедитесь, что вы открыли приложение через Telegram.
-      </p>
+const ErrorScreen = ({ message }: { message: string }) => (
+  <div className="fixed inset-0 bg-black flex items-center justify-center">
+    <div className="text-white text-center p-4">
+      <div className="mb-4 text-red-500">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-12 w-12 mx-auto"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
+        </svg>
+      </div>
+      <h2 className="text-xl font-semibold mb-2">Ошибка</h2>
+      <p className="text-gray-400">{message}</p>
     </div>
   </div>
 );
@@ -35,48 +70,38 @@ const LayoutContent = ({ children }: { children: React.ReactNode }) => {
   const [stableViewportHeight, setStableViewportHeight] = useState('100vh');
 
   useEffect(() => {
-    if (!ready || !webApp) return;
+    if (webApp) {
+      const updateHeight = () => {
+        setViewportHeight(`${webApp.viewportHeight}px`);
+        setStableViewportHeight(`${webApp.viewportStableHeight}px`);
+      };
 
-    const updateViewport = () => {
-      setViewportHeight(`${webApp.viewportHeight}px`);
-      setStableViewportHeight(`${webApp.viewportStableHeight}px`);
-    };
+      updateHeight();
+      webApp.onEvent('viewportChanged', updateHeight);
 
-    updateViewport();
-    webApp.onEvent('viewportChanged', updateViewport);
+      return () => {
+        webApp.offEvent('viewportChanged', updateHeight);
+      };
+    }
+  }, [webApp]);
 
-    return () => {
-      webApp.offEvent('viewportChanged', updateViewport);
-    };
-  }, [ready, webApp]);
+  if (error) {
+    return <ErrorScreen message={error} />;
+  }
 
-  const styles = {
-    height: stableViewportHeight,
-    minHeight: viewportHeight,
-    overflow: 'hidden'
-  };
+  if (!ready) {
+    return <LoadingScreen />;
+  }
 
   return (
-    <html lang="ru">
-      <Head>
-        <link rel="preconnect" href="https://api.dicebear.com" />
-      </Head>
-      <body 
-        className={`${inter.className} antialiased`}
-        style={styles}
-      >
-        <GlobalStyles />
-        <div style={styles}>
-          {error ? (
-            <ErrorScreen error={error} />
-          ) : !ready ? (
-            <LoadingScreen />
-          ) : (
-            children
-          )}
-        </div>
-      </body>
-    </html>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      style={{ minHeight: viewportHeight }}
+      className="bg-black text-white"
+    >
+      {children}
+    </motion.div>
   );
 };
 
