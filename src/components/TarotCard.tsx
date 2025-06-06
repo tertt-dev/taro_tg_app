@@ -7,10 +7,11 @@ interface TarotCardProps {
   name: string;
   image: string;
   isRevealed?: boolean;
+  isReversed?: boolean;
   onReveal?: () => void;
 }
 
-export function TarotCard({ name, image, isRevealed = false, onReveal }: TarotCardProps) {
+export function TarotCard({ name, image, isRevealed = false, isReversed = false, onReveal }: TarotCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleClick = () => {
@@ -67,7 +68,7 @@ export function TarotCard({ name, image, isRevealed = false, onReveal }: TarotCa
           style={{ 
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
+            transform: `rotateY(180deg) ${isReversed ? 'rotate(180deg)' : ''}`,
             transformStyle: 'preserve-3d'
           }}
         >
