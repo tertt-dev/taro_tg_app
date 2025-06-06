@@ -1,63 +1,91 @@
-import { motion } from 'framer-motion';
+'use client'
+
+import { useState } from 'react';
 import Image from 'next/image';
 
 interface TarotCardProps {
   name: string;
-  image?: string;
-  isReversed?: boolean;
-  isInteractive?: boolean;
-  size?: 'sm' | 'md' | 'lg';
-  onClick?: () => void;
+  image: string;
+  isRevealed?: boolean;
+  onReveal?: () => void;
 }
 
-const sizeClasses = {
-  sm: 'w-24 h-36',
-  md: 'w-32 h-48',
-  lg: 'w-48 h-72'
-};
+export function TarotCard({ name, image, isRevealed = false, onReveal }: TarotCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
 
-export const TarotCard = ({ 
-  name, 
-  image = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(name)}`, 
-  isReversed = false, 
-  isInteractive = true,
-  size = 'md',
-  onClick 
-}: TarotCardProps) => {
+  const handleClick = () => {
+    setIsFlipped(!isFlipped);
+    if (onReveal && !isRevealed) {
+      onReveal();
+    }
+  };
+
   return (
-    <motion.div
-      whileHover={isInteractive ? { scale: 1.05, y: -5 } : {}}
-      whileTap={isInteractive ? { scale: 0.95 } : {}}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`relative ${sizeClasses[size]} cursor-pointer`}
-      onClick={onClick}
+    <div
+      className="relative w-[280px] h-[480px] cursor-pointer"
+      style={{ perspective: '1000px' }}
+      onClick={handleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/50 to-black/50 rounded-xl backdrop-blur-sm border border-zinc-700/50" />
-      <motion.div
-        initial={{ rotateY: 0 }}
-        animate={{ rotateY: isReversed ? 180 : 0 }}
-        transition={{ duration: 0.6 }}
-        className="relative w-full h-full rounded-xl bg-gradient-to-br from-zinc-900 to-black flex flex-col items-center justify-center p-4"
+      <div
+        className="relative w-full h-full transition-transform duration-700"
+        style={{
+          transformStyle: 'preserve-3d',
+          transform: isFlipped ? 'rotateY(180deg)' : ''
+        }}
       >
-        <div className="relative w-full h-full">
-          <Image
-            src={image}
-            alt={name}
-            fill
-            className="object-contain rounded-lg opacity-80 hover:opacity-100 transition-opacity"
-          />
+        {/* Front of card (Back side of tarot) */}
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{ 
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden'
+          }}
+        >
+          <div className="w-full h-full glass-panel overflow-hidden border-2 border-[var(--accent-silver)] bg-gradient-to-br from-[#1a1a2e] to-[#000000]">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg
+                className="w-24 h-24 text-[var(--accent-silver)] opacity-20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
-        {isReversed && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-zinc-800 rounded-full"
-          >
-            <span className="text-zinc-400 text-sm">↻</span>
-          </motion.div>
-        )}
-      </motion.div>
-    </motion.div>
+
+        {/* Back of card (Front side with image) */}
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{ 
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+            transformStyle: 'preserve-3d'
+          }}
+        >
+          <div className="relative w-full h-full glass-panel overflow-hidden border-2 border-[var(--accent-gold)]">
+            <Image
+              src={image}
+              alt={name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 280px) 100vw, 280px"
+              priority
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
-}; 
+} 

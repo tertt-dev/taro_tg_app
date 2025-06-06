@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M0 10h20v1H0zM10 0v20h1V0z" fill="currentColor" fill-opacity="0.3"/>
+      <circle cx="10" cy="10" r="2" fill="currentColor" fill-opacity="0.4"/>
+    </pattern>
+  </defs>
+  <rect width="100" height="100" fill="url(#pattern)"/>
+  
+  <!-- Decorative elements -->
+  <g fill="none" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.2">
+    <circle cx="50" cy="50" r="45"/>
+    <circle cx="50" cy="50" r="35"/>
+    <path d="M50 5v90M5 50h90"/>
+    <path d="M15.5 15.5l69 69M15.5 84.5l69-69"/>
+  </g>
+  
+  <!-- Central ornament -->
+  <g fill="currentColor" fill-opacity="0.15">
+    <path d="M50 30l5 8.66H45z"/>
+    <path d="M50 70l5-8.66H45z"/>
+    <path d="M30 50l8.66-5v10z"/>
+    <path d="M70 50l-8.66-5v10z"/>
+  </g>
+</svg> 

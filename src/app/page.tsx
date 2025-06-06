@@ -1,51 +1,59 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { useTelegramWebApp } from '@/components/TelegramProvider';
-import { Header } from '@/components/Header';
 import { TarotCard } from '@/components/TarotCard';
-import type { Card } from '@/utils/predictions';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
-const decorativeCards = [
-  { name: "Маг", image: "https://api.dicebear.com/7.x/identicon/svg?seed=magician" },
-  { name: "Жрица", image: "https://api.dicebear.com/7.x/identicon/svg?seed=priestess" },
-  { name: "Императрица", image: "https://api.dicebear.com/7.x/identicon/svg?seed=empress" },
+interface TarotCardData {
+  name: string;
+  image: string;
+  description: string;
+}
+
+const TAROT_CARDS: TarotCardData[] = [
+  {
+    name: 'Шут',
+    image: '/cards/fool.svg',
+    description: 'Новые начинания, спонтанность, свобода'
+  },
+  {
+    name: 'Маг',
+    image: '/cards/magician.svg',
+    description: 'Сила воли, мастерство, проявление'
+  },
+  {
+    name: 'Верховная Жрица',
+    image: '/cards/high-priestess.svg',
+    description: 'Интуиция, тайны, внутренняя мудрость'
+  }
 ];
 
 export default function Home() {
-  const router = useRouter();
-  const { ready } = useTelegramWebApp();
-  const [dailyCard, setDailyCard] = useState<Card | null>(null);
+  const [selectedCards, setSelectedCards] = useState<number[]>([]);
+  const [isReading, setIsReading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (ready) {
-      router.push('/prediction');
+  const startReading = () => {
+    setIsReading(true);
+    setIsLoading(true);
+    // Randomly select 3 cards
+    const selected: number[] = [];
+    while (selected.length < 3) {
+      const randomIndex = Math.floor(Math.random() * TAROT_CARDS.length);
+      if (!selected.includes(randomIndex)) {
+        selected.push(randomIndex);
+      }
     }
-  }, [ready, router]);
-
-  useEffect(() => {
-    // Проверяем, была ли уже показана карта дня
-    const today = new Date().toDateString();
-    const storedCard = localStorage.getItem('dailyCard');
-    const storedDate = localStorage.getItem('dailyCardDate');
-
-    if (!storedCard || storedDate !== today) {
-      fetch('/api/get-prediction')
-        .then(res => res.json())
-        .then(card => {
-          setDailyCard(card);
-          localStorage.setItem('dailyCard', JSON.stringify(card));
-          localStorage.setItem('dailyCardDate', today);
-        });
-    } else {
-      setDailyCard(JSON.parse(storedCard));
-    }
-  }, []);
-
-  const handleGetPrediction = () => {
-    router.push('/prediction');
+    // Reveal cards one by one with delay
+    selected.forEach((cardIndex, i) => {
+      setTimeout(() => {
+        setSelectedCards(prev => [...prev, cardIndex]);
+        if (i === selected.length - 1) {
+          setIsLoading(false);
+        }
+      }, i * 1000);
+    });
   };
 
   return (
@@ -53,56 +61,75 @@ export default function Home() {
       {/* Фоновая текстура */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800/20 via-zinc-900/20 to-black pointer-events-none" />
       
-      <div className="relative z-10">
-        <Header />
+      <div className="relative z-10 w-full py-8 px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-4xl mx-auto text-center"
+        >
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-cormorant font-semibold text-[var(--accent-gold)] mb-4">
+            Мистическое Таро
+          </h1>
+          <p className="text-lg sm:text-xl text-[var(--text-secondary)] font-dm-sans mb-12">
+            Погрузитесь в тайны карт и раскройте послания судьбы
+          </p>
 
-        <main className="container mx-auto px-4 py-8">
-          {/* Карта дня */}
-          {dailyCard && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-12"
+          {!isReading && (
+            <motion.button
+              className="mystic-button mx-auto group"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={startReading}
             >
-              <h2 className="text-xl text-center text-zinc-400 mb-4 font-serif">
-                Карта дня
-              </h2>
-              <div className="flex justify-center">
-                <TarotCard
-                  name={dailyCard.name}
-                  image={dailyCard.image}
-                  isReversed={dailyCard.isReversed}
-                  size="md"
-                  isInteractive={false}
-                />
-              </div>
-            </motion.div>
+              <span className="text-[var(--accent-gold)]">✦</span>
+              <span className="text-lg font-dm-sans">Получить предсказание</span>
+              <span className="text-[var(--accent-gold)] opacity-0 group-hover:opacity-100 transition-opacity">
+                ✦
+              </span>
+            </motion.button>
           )}
 
-          {/* Декоративные карты */}
-          <div className="flex justify-center gap-4 mb-12">
-            {decorativeCards.map((card, index) => (
-              <motion.div
-                key={card.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.2 }}
-              >
-                <TarotCard {...card} size="sm" />
-              </motion.div>
-            ))}
-          </div>
+          {isReading && (
+            <div className="mt-12">
+              {isLoading ? (
+                <div className="flex justify-center items-center min-h-[480px]">
+                  <LoadingSpinner />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
+                  {TAROT_CARDS.map((card, index) => (
+                    <TarotCard
+                      key={card.name}
+                      {...card}
+                      isRevealed={selectedCards.includes(index)}
+                      onReveal={() => {
+                        if (!selectedCards.includes(index)) {
+                          setSelectedCards(prev => [...prev, index]);
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
 
-          {/* Кнопка получения предсказания */}
-          <motion.button
-            onClick={handleGetPrediction}
-            className="w-full max-w-md mx-auto block py-4 px-8 bg-gradient-to-r from-zinc-800 to-zinc-900 rounded-lg border border-zinc-700/50 shadow-lg hover:shadow-zinc-700/20 transition-all duration-300"
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <span className="text-lg font-serif">Получить предсказание</span>
-          </motion.button>
-        </main>
+              {selectedCards.length === TAROT_CARDS.length && (
+                <motion.button
+                  className="mystic-button mx-auto mt-12"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  onClick={() => {
+                    setSelectedCards([]);
+                    setIsReading(false);
+                    setIsLoading(false);
+                  }}
+                >
+                  <span>✧</span>
+                  <span>Начать заново</span>
+                </motion.button>
+              )}
+            </div>
+          )}
+        </motion.div>
       </div>
     </div>
   );
