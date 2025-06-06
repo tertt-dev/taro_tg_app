@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { TelegramWebApp } from '@/types/telegram';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -24,7 +24,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, authenticate, error: authError } = useAuth();
 
-  useEffect(() => {
+  const initializeWebApp = useCallback(async () => {
     console.log('TelegramProvider: Initializing...');
     
     if (typeof window !== 'undefined') {
@@ -49,21 +49,14 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
           }
           
           // Authenticate using initData
-          authenticate(webAppInstance.initData || '')
-            .then(success => {
-              if (success) {
-                console.log('Authentication successful');
-                setReady(true);
-                setError(null);
-              } else {
-                setError('Authentication failed');
-              }
-            })
-            .catch(err => {
-              console.error('Authentication error:', err);
-              setError('Authentication failed');
-            });
-          
+          const success = await authenticate(webAppInstance.initData || '');
+          if (success) {
+            console.log('Authentication successful');
+            setReady(true);
+            setError(null);
+          } else {
+            setError('Authentication failed');
+          }
         } else {
           const errorMsg = 'Telegram WebApp is not available';
           console.warn(errorMsg);
@@ -80,6 +73,10 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, [authenticate]);
+
+  useEffect(() => {
+    initializeWebApp();
+  }, [initializeWebApp]);
 
   const value = {
     webApp,
