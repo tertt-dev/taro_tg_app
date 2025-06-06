@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Moon, Sun } from 'lucide-react';
 import { useTelegramWebApp } from '@/components/TelegramProvider';
+import Image from 'next/image';
 
 interface Theme {
   id: 'light' | 'dark';
@@ -64,13 +65,16 @@ export default function ProfilePage() {
             className="bg-zinc-900/50 rounded-xl p-6 backdrop-blur-sm"
           >
             <div className="flex items-center gap-4 mb-6">
-              {webApp.initDataUnsafe.user.photo_url && (
-                <img
-                  src={webApp.initDataUnsafe.user.photo_url}
+              <div className="w-24 h-24 rounded-full overflow-hidden mb-4">
+                <Image
+                  src={webApp.initDataUnsafe.user?.photo_url || '/placeholder-avatar.svg'}
                   alt="Profile"
-                  className="w-16 h-16 rounded-full"
+                  width={96}
+                  height={96}
+                  className="w-full h-full object-cover"
+                  unoptimized
                 />
-              )}
+              </div>
               <div>
                 <h2 className="text-xl font-semibold">
                   {webApp.initDataUnsafe.user.first_name}{' '}
