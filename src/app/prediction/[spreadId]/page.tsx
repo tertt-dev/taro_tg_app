@@ -73,6 +73,9 @@ export default function PredictionPage() {
 
   if (!spread) return null;
 
+  const cardCount = spread.cardCount || (spread.id === 'random' ? Math.floor(Math.random() * 3) + 1 : 3);
+  const isSingleCard = cardCount === 1;
+
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <motion.div
@@ -90,8 +93,12 @@ export default function PredictionPage() {
             <LoadingSpinner />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
-            {Array.from({ length: spread.cardCount || 3 }).map((_, index) => {
+          <div className={`grid gap-8 justify-items-center ${
+            isSingleCard 
+              ? 'grid-cols-1 place-items-center' 
+              : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+          }`}>
+            {Array.from({ length: cardCount }).map((_, index) => {
               const card = TAROT_CARDS[selectedCards[index]] || TAROT_CARDS[0];
               return (
                 <TarotCard
@@ -104,13 +111,14 @@ export default function PredictionPage() {
                       setSelectedCards(prev => [...prev, index]);
                     }
                   }}
+                  size={isSingleCard ? 'lg' : 'md'}
                 />
               );
             })}
           </div>
         )}
 
-        {selectedCards.length === (spread.cardCount || 3) && (
+        {selectedCards.length === cardCount && (
           <motion.button
             className="mx-auto mt-12 px-6 py-3 bg-primary/10 hover:bg-primary/20 rounded-lg flex items-center gap-2 transition-colors"
             initial={{ opacity: 0 }}
