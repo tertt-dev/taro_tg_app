@@ -35,6 +35,45 @@ if (botToken) {
         });
       }
     });
+
+    // Info command to show user data
+    bot.onText(/\/info/, (msg: TelegramBot.Message) => {
+      if (bot) {
+        const chatId = msg.chat.id;
+        const user = msg.from;
+        
+        if (user) {
+          const userInfo = [
+            '👤 *Информация о пользователе:*',
+            `\nID: \`${user.id}\``,
+            `Имя: ${user.first_name}`,
+            user.last_name ? `Фамилия: ${user.last_name}` : null,
+            user.username ? `Username: @${user.username}` : null,
+            user.language_code ? `Язык: ${user.language_code}` : null,
+            `\n📱 *Информация о чате:*`,
+            `ID чата: \`${chatId}\``,
+            `Тип чата: ${msg.chat.type}`
+          ]
+          .filter(Boolean) // Remove null values
+          .join('\n');
+
+          bot.sendMessage(chatId, userInfo, {
+            parse_mode: 'Markdown',
+            reply_to_message_id: msg.message_id
+          });
+        } else {
+          bot.sendMessage(chatId, 'Не удалось получить информацию о пользователе', {
+            reply_to_message_id: msg.message_id
+          });
+        }
+      }
+    });
+
+    // Set bot commands
+    bot.setMyCommands([
+      { command: 'start', description: 'Запустить бота' },
+      { command: 'info', description: 'Показать информацию о пользователе' }
+    ]);
   } catch (error) {
     console.error('Error initializing Telegram bot:', error);
   }
