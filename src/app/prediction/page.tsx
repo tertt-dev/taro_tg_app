@@ -15,6 +15,7 @@ export default function PredictionPage() {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [revealedCards, setRevealedCards] = useState<number[]>([]);
 
   useEffect(() => {
     if (!ready) {
@@ -35,6 +36,7 @@ export default function PredictionPage() {
 
   const handleNewPrediction = async () => {
     setIsGenerating(true);
+    setRevealedCards([]);
     try {
       const prediction = await generatePrediction();
       setPredictions((prev) => [prediction, ...prev]);
@@ -86,7 +88,13 @@ export default function PredictionPage() {
                       key={index}
                       name={card.name}
                       image={`https://api.dicebear.com/7.x/identicon/svg?seed=${card.name.toLowerCase().replace(/\s+/g, '-')}`}
-                      isReversed={card.isReversed}
+                      description={card.description || ''}
+                      isRevealed={revealedCards.includes(index)}
+                      onReveal={() => {
+                        if (!revealedCards.includes(index)) {
+                          setRevealedCards(prev => [...prev, index]);
+                        }
+                      }}
                     />
                   ))}
                 </div>

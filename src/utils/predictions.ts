@@ -1,60 +1,55 @@
 export interface Card {
   name: string;
   description: string;
-  isReversed: boolean;
-  image?: string;
 }
 
 export interface Prediction {
-  id: string;
-  cards: Card[];
   date: string;
+  cards: Card[];
   text: string;
 }
 
-const CARDS = [
+const TAROT_CARDS: Card[] = [
   {
     name: 'Шут',
-    description: 'Новые начинания, спонтанность, свобода',
-    image: 'https://api.dicebear.com/7.x/identicon/svg?seed=fool'
+    description: 'Новые начинания, спонтанность, свобода'
   },
   {
     name: 'Маг',
-    description: 'Сила воли, мастерство, проявление',
-    image: 'https://api.dicebear.com/7.x/identicon/svg?seed=magician'
+    description: 'Сила воли, мастерство, проявление'
   },
   {
     name: 'Верховная Жрица',
-    description: 'Интуиция, тайны, внутреннее знание',
-    image: 'https://api.dicebear.com/7.x/identicon/svg?seed=priestess'
+    description: 'Интуиция, тайны, внутренняя мудрость'
   },
-  // Добавьте остальные карты по аналогии
+  {
+    name: 'Императрица',
+    description: 'Изобилие, творчество, материнство'
+  },
+  {
+    name: 'Император',
+    description: 'Власть, структура, стабильность'
+  }
 ];
 
-export const generatePrediction = async (): Promise<Prediction> => {
-  // Выбираем 3 случайные карты
-  const selectedCards = Array.from({ length: 3 }, () => {
-    const card = CARDS[Math.floor(Math.random() * CARDS.length)];
-    return {
-      ...card,
-      isReversed: Math.random() > 0.5,
-    };
-  });
-
-  // Генерируем текст предсказания
-  const text = `На основе выпавших карт: ${selectedCards.map(card => 
-    `${card.name}${card.isReversed ? ' (в перевернутом положении)' : ''}`
-  ).join(', ')}. Это указывает на период трансформации и новых возможностей в вашей жизни.`;
+export async function generatePrediction(): Promise<Prediction> {
+  // Select 3 random cards
+  const selectedCards: Card[] = [];
+  while (selectedCards.length < 3) {
+    const randomIndex = Math.floor(Math.random() * TAROT_CARDS.length);
+    if (!selectedCards.includes(TAROT_CARDS[randomIndex])) {
+      selectedCards.push(TAROT_CARDS[randomIndex]);
+    }
+  }
 
   return {
-    id: Date.now().toString(),
-    cards: selectedCards,
     date: new Date().toLocaleDateString('ru-RU', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
+      day: 'numeric'
     }),
-    text,
+    cards: selectedCards,
+    text: `Карты говорят о важных изменениях в вашей жизни. ${selectedCards.map(card => card.name).join(', ')} указывают на необходимость прислушаться к своей интуиции и быть готовым к новым возможностям.`
   };
-}; 
+} 
