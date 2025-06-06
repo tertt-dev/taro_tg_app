@@ -21,20 +21,18 @@ export default function ProfilePage() {
   const { webApp } = useTelegramWebApp();
   const [theme, setTheme] = useState<Theme['id']>('dark');
 
-  // Show BackButton in Telegram WebApp
+  // Handle BackButton in Telegram WebApp
   useEffect(() => {
-    if (webApp?.BackButton) {
-      webApp.BackButton.show();
-      return () => {
-        webApp.BackButton.hide();
-      };
-    }
-  }, [webApp]);
+    const backButton = webApp?.BackButton;
+    if (backButton) {
+      backButton.show();
+      const handleBack = () => window.history.back();
+      backButton.onClick(handleBack);
 
-  // Handle back button click
-  useEffect(() => {
-    if (webApp?.BackButton) {
-      webApp.BackButton.onClick(() => window.history.back());
+      return () => {
+        backButton.hide();
+        backButton.offClick(handleBack);
+      };
     }
   }, [webApp]);
 
@@ -42,6 +40,8 @@ export default function ProfilePage() {
     setTheme(newTheme);
     // Here you can implement actual theme change logic
   };
+
+  const user = webApp?.initDataUnsafe?.user;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -58,7 +58,7 @@ export default function ProfilePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {webApp?.initDataUnsafe.user && (
+        {user && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -67,7 +67,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-4 mb-6">
               <div className="w-24 h-24 rounded-full overflow-hidden mb-4">
                 <Image
-                  src={webApp.initDataUnsafe.user?.photo_url || '/placeholder-avatar.svg'}
+                  src={user.photo_url || '/placeholder-avatar.svg'}
                   alt="Profile"
                   width={96}
                   height={96}
@@ -77,12 +77,12 @@ export default function ProfilePage() {
               </div>
               <div>
                 <h2 className="text-xl font-semibold">
-                  {webApp.initDataUnsafe.user.first_name}{' '}
-                  {webApp.initDataUnsafe.user.last_name}
+                  {user.first_name}{' '}
+                  {user.last_name}
                 </h2>
-                {webApp.initDataUnsafe.user.username && (
+                {user.username && (
                   <p className="text-muted-foreground">
-                    @{webApp.initDataUnsafe.user.username}
+                    @{user.username}
                   </p>
                 )}
               </div>
@@ -118,13 +118,13 @@ export default function ProfilePage() {
                 <h3 className="text-lg font-medium mb-3">Настройки</h3>
                 <div className="space-y-2">
                   <button
-                    onClick={() => webApp?.openTelegramLink('https://t.me/share/url?url=https://t.me/your_bot')}
+                    onClick={() => webApp?.openTelegramLink?.('https://t.me/share/url?url=https://t.me/your_bot')}
                     className="w-full text-left px-4 py-3 rounded-lg bg-black/20 hover:bg-black/30 transition-colors"
                   >
                     Поделиться ботом
                   </button>
                   <button
-                    onClick={() => webApp?.openTelegramLink('https://t.me/your_support_chat')}
+                    onClick={() => webApp?.openTelegramLink?.('https://t.me/your_support_chat')}
                     className="w-full text-left px-4 py-3 rounded-lg bg-black/20 hover:bg-black/30 transition-colors"
                   >
                     Поддержка
