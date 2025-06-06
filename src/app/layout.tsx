@@ -1,8 +1,9 @@
 import './globals.css'
 import { Inter, Cormorant, DM_Sans } from 'next/font/google'
 import { ParticlesBackground } from '@/components/ParticlesBackground'
+import { BottomNav } from '@/components/BottomNav'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' })
 const cormorant = Cormorant({ 
   subsets: ['latin'],
   variable: '--font-cormorant',
@@ -15,8 +16,8 @@ const dmSans = DM_Sans({
 })
 
 export const metadata = {
-  title: 'Мистическое Таро',
-  description: 'Погрузитесь в мир тайн и предсказаний',
+  title: 'Таро Предсказания',
+  description: 'Узнайте свое будущее с помощью карт Таро',
 }
 
 export default function RootLayout({
@@ -33,6 +34,7 @@ export default function RootLayout({
         <div className="fixed inset-0 z-[5] pointer-events-none">
           <ParticlesBackground />
         </div>
+        <BottomNav />
       </body>
     </html>
   )
