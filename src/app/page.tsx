@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { SpreadSelector, SpreadType } from '@/components/SpreadSelector';
 import { useRouter } from 'next/navigation';
 

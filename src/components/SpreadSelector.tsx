@@ -1,7 +1,6 @@
 'use client';
 
 import { Heart, Briefcase, Sun, Dices } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export interface SpreadType {
   id: string;

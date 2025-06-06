@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Clock, LayoutGrid, User, Info } from 'lucide-react';
+import { Home, Clock, LayoutGrid, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
