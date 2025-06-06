@@ -1,74 +1,71 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import Script from 'next/script';
 
-type WebApp = NonNullable<typeof window.Telegram>['WebApp'];
-
-interface TelegramContextType {
-  webApp: WebApp | null;
-  ready: boolean;
-  error: Error | null;
+interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+  photo_url?: string;
 }
 
-const TelegramContext = createContext<TelegramContextType>({
+interface TelegramWebApp {
+  ready: () => void;
+  close: () => void;
+  expand: () => void;
+  MainButton: {
+    text: string;
+    show: () => void;
+    hide: () => void;
+    onClick: (callback: () => void) => void;
+    offClick: (callback: () => void) => void;
+    enable: () => void;
+    disable: () => void;
+  };
+  BackButton: {
+    show: () => void;
+    hide: () => void;
+    onClick: (callback: () => void) => void;
+    offClick: (callback: () => void) => void;
+  };
+  initDataUnsafe: {
+    user?: TelegramUser;
+    start_param?: string;
+  };
+  openTelegramLink: (url: string) => void;
+}
+
+interface TelegramContext {
+  webApp: TelegramWebApp | null;
+  ready: boolean;
+}
+
+const TelegramContext = createContext<TelegramContext>({
   webApp: null,
   ready: false,
-  error: null,
 });
 
-export const useTelegramWebApp = () => {
-  const context = useContext(TelegramContext);
-  if (!context) {
-    throw new Error('useTelegramWebApp must be used within TelegramProvider');
-  }
-  return context;
-};
+export function TelegramProvider({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  const webApp = typeof window !== 'undefined' ? (window as any).Telegram?.WebApp : null;
 
-export const TelegramProvider = ({ children }: { children: React.ReactNode }) => {
-  const [state, setState] = useState<TelegramContextType>({
-    webApp: null,
-    ready: false,
-    error: null,
-  });
-
-  const handleLoad = () => {
-    try {
-      if (window.Telegram?.WebApp) {
-        const webApp = window.Telegram.WebApp;
-        webApp.ready();
-        webApp.expand();
-        setState({ webApp, ready: true, error: null });
-      } else {
-        setState(prev => ({
-          ...prev,
-          error: new Error('Telegram WebApp not found. Please open this app in Telegram.')
-        }));
-      }
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        error: error instanceof Error ? error : new Error('Failed to initialize Telegram WebApp')
-      }));
+  useEffect(() => {
+    if (webApp) {
+      webApp.ready();
+      setReady(true);
     }
-  };
+  }, [webApp]);
 
   return (
-    <>
-      <Script
-        src="https://telegram.org/js/telegram-web-app.js"
-        strategy="afterInteractive"
-        onLoad={handleLoad}
-        onError={() => {
-          setState(prev => ({
-            ...prev,
-            error: new Error('Failed to load Telegram WebApp script')
-          }));
-        }}
-      />
-      <TelegramContext.Provider value={state}>
-        {children}
-      </TelegramContext.Provider>
-    </>
+    <TelegramContext.Provider value={{ webApp, ready }}>
+      {children}
+    </TelegramContext.Provider>
   );
-}; 
+}
+
+export function useTelegramWebApp() {
+  return useContext(TelegramContext);
+} 

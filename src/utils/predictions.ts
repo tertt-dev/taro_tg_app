@@ -9,7 +9,7 @@ export interface Prediction {
   text: string;
 }
 
-const TAROT_CARDS: Card[] = [
+export const TAROT_CARDS: Card[] = [
   {
     name: 'Шут',
     description: 'Новые начинания, спонтанность, свобода'
