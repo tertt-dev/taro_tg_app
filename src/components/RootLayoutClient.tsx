@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Inter } from "next/font/google";
 import Head from 'next/head';
-import { GlobalStyles } from "@/components/GlobalStyles";
 import { TelegramProvider, useTelegramWebApp } from "@/components/TelegramProvider";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
@@ -67,13 +66,11 @@ const ErrorScreen = ({ message }: { message: string }) => (
 const LayoutContent = ({ children }: { children: React.ReactNode }) => {
   const { webApp, ready, error } = useTelegramWebApp();
   const [viewportHeight, setViewportHeight] = useState('100vh');
-  const [stableViewportHeight, setStableViewportHeight] = useState('100vh');
 
   useEffect(() => {
     if (webApp) {
       const updateHeight = () => {
         setViewportHeight(`${webApp.viewportHeight}px`);
-        setStableViewportHeight(`${webApp.viewportStableHeight}px`);
       };
 
       updateHeight();
