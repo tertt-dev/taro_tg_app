@@ -4,16 +4,28 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret';
 
+// Define paths that should skip authentication
+const PUBLIC_PATHS = [
+  '/api/auth/signin',
+  '/api/auth/check',
+  '/_next',
+  '/favicon.ico'
+];
+
 export async function middleware(request: NextRequest) {
-  console.log('Middleware: Processing request for', request.nextUrl.pathname);
-  
-  // Skip authentication for auth-related routes and static files
-  if (
-    request.nextUrl.pathname.startsWith('/api/auth') ||
-    request.nextUrl.pathname.startsWith('/_next') ||
-    request.nextUrl.pathname.includes('.')
-  ) {
-    console.log('Middleware: Skipping auth for', request.nextUrl.pathname);
+  const path = request.nextUrl.pathname;
+  console.log('Middleware: Processing request for', path);
+
+  // Check if the path should skip authentication
+  const isPublicPath = PUBLIC_PATHS.some(publicPath => path.startsWith(publicPath));
+  if (isPublicPath) {
+    console.log('Middleware: Skipping auth for public path:', path);
+    return NextResponse.next();
+  }
+
+  // Skip static files
+  if (path.includes('.')) {
+    console.log('Middleware: Skipping auth for static file:', path);
     return NextResponse.next();
   }
 
@@ -22,11 +34,12 @@ export async function middleware(request: NextRequest) {
 
   console.log('Middleware: Tokens present:', {
     accessToken: !!accessToken,
-    refreshToken: !!refreshToken
+    refreshToken: !!refreshToken,
+    path
   });
 
   if (!accessToken) {
-    console.log('Middleware: No access token provided');
+    console.log('Middleware: No access token provided for path:', path);
     return NextResponse.json(
       { error: 'No access token provided' },
       { status: 401 }
@@ -36,12 +49,12 @@ export async function middleware(request: NextRequest) {
   try {
     // Verify access token
     console.log('Middleware: Verifying access token...');
-    jwt.verify(accessToken, JWT_SECRET) as { userId: string };
+    const decoded = jwt.verify(accessToken, JWT_SECRET) as { userId: string };
+    console.log('Middleware: Access token valid for user:', decoded.userId);
     
     // Token is valid, continue
-    console.log('Middleware: Access token valid, proceeding');
     return NextResponse.next();
-  } catch {
+  } catch (error) {
     // Access token is invalid, try refresh token
     console.log('Middleware: Access token invalid, trying refresh token');
     if (!refreshToken) {
@@ -56,6 +69,7 @@ export async function middleware(request: NextRequest) {
       // Verify refresh token
       console.log('Middleware: Verifying refresh token...');
       const decodedRefresh = jwt.verify(refreshToken, JWT_SECRET) as { userId: string };
+      console.log('Middleware: Refresh token valid for user:', decodedRefresh.userId);
       
       // Generate new access token
       console.log('Middleware: Generating new access token...');
@@ -72,13 +86,13 @@ export async function middleware(request: NextRequest) {
       response.cookies.set('access_token', newAccessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax', // Changed from 'strict' to 'lax' to allow cross-site requests
-        maxAge: 60 * 60, // 1 hour
+        sameSite: 'lax',
+        maxAge: 60 * 60,
         path: '/',
       });
 
       return response;
-    } catch {
+    } catch (error) {
       console.log('Middleware: Refresh token invalid');
       return NextResponse.json(
         { error: 'Invalid refresh token' },

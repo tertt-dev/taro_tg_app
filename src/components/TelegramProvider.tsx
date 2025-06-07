@@ -29,6 +29,24 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     
     if (typeof window !== 'undefined') {
       try {
+        // Try to get initData from URL first (for development)
+        const urlParams = new URLSearchParams(window.location.search);
+        const initDataFromUrl = urlParams.get('initData');
+        
+        console.log('TelegramProvider: Checking for initData in URL:', !!initDataFromUrl);
+
+        if (initDataFromUrl) {
+          console.log('TelegramProvider: Using initData from URL');
+          const success = await authenticate(initDataFromUrl);
+          if (success) {
+            console.log('TelegramProvider: Authentication successful with URL initData');
+            setReady(true);
+            setError(null);
+            return;
+          }
+        }
+
+        // If no URL initData or authentication failed, try Telegram WebApp
         console.log('Checking for Telegram WebApp...');
         const app = window.Telegram?.WebApp;
         console.log('WebApp object:', app);
@@ -50,16 +68,16 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
           
           // Get initData from WebApp
           const initData = webAppInstance.initData;
-          console.log('InitData:', initData);
+          console.log('InitData from WebApp:', initData ? 'present' : 'missing');
           
           if (!initData) {
-            console.error('No initData available');
+            console.error('No initData available from WebApp');
             setError('No authentication data available');
             return;
           }
           
           // Authenticate using initData
-          console.log('Attempting authentication...');
+          console.log('Attempting authentication with WebApp initData...');
           const success = await authenticate(initData);
           console.log('Authentication result:', success);
           
@@ -111,16 +129,13 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
             Это приложение доступно только через Telegram
           </p>
           <p className="text-muted-foreground mb-6">
-            Пожалуйста, откройте бота в Telegram и используйте кнопку для запуска приложения
+            Для тестирования добавьте параметр initData в URL
           </p>
-          <a
-            href="https://t.me/your_bot_username"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600 transition-colors"
-          >
-            Открыть бота в Telegram
-          </a>
+          <div className="text-sm text-gray-400 mt-4">
+            <p>Текущий URL: {typeof window !== 'undefined' ? window.location.href : ''}</p>
+            <p>WebApp доступен: {typeof window !== 'undefined' && !!window.Telegram?.WebApp ? 'Да' : 'Нет'}</p>
+            <p>Ошибка: {error || 'Нет'}</p>
+          </div>
         </div>
       </div>
     );

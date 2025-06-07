@@ -12,18 +12,28 @@ if (!BOT_TOKEN) {
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
+  console.log('Auth API: Received signin request');
   try {
-    const { initData } = await request.json();
+    const body = await request.json();
+    console.log('Auth API: Request body:', body);
+
+    const { initData } = body;
+    console.log('Auth API: Extracted initData:', initData);
 
     if (!initData) {
+      console.log('Auth API: No initData provided');
       return NextResponse.json(
         { error: 'No initData provided' },
         { status: 400 }
       );
     }
 
+    // Log BOT_TOKEN status
+    console.log('Auth API: BOT_TOKEN present:', !!BOT_TOKEN);
+
     // Validate initData with bot token
     if (!BOT_TOKEN || !isValid(initData, BOT_TOKEN)) {
+      console.log('Auth API: Invalid initData or missing BOT_TOKEN');
       return NextResponse.json(
         { error: 'Invalid initData' },
         { status: 401 }
@@ -31,9 +41,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse the validated initData
+    console.log('Auth API: Parsing initData...');
     const data = parse(initData);
+    console.log('Auth API: Parsed data:', data);
     
     if (!data.user?.id) {
+      console.log('Auth API: No user data found in parsed initData');
       return NextResponse.json(
         { error: 'No user data found' },
         { status: 400 }
@@ -41,6 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create tokens
+    console.log('Auth API: Creating tokens for user:', data.user.id);
     const accessToken = jwt.sign(
       { userId: data.user.id },
       JWT_SECRET,
@@ -60,27 +74,29 @@ export async function POST(request: NextRequest) {
     );
 
     // Set httpOnly cookies
+    console.log('Auth API: Setting cookies...');
     response.cookies.set('access_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // Changed from 'strict' to 'lax' to allow cross-site requests
-      maxAge: 60 * 60, // 1 hour
+      sameSite: 'lax',
+      maxAge: 60 * 60,
       path: '/',
     });
 
     response.cookies.set('refresh_token', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // Changed from 'strict' to 'lax' to allow cross-site requests
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60,
       path: '/',
     });
 
+    console.log('Auth API: Authentication successful');
     return response;
   } catch (error) {
-    console.error('Authentication error:', error);
+    console.error('Auth API: Authentication error:', error);
     return NextResponse.json(
-      { error: 'Authentication failed' },
+      { error: 'Authentication failed', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

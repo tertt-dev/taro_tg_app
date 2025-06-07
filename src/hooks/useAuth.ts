@@ -1,104 +1,71 @@
-import { useState } from 'react';
-import axios from 'axios';
+import { useState, useCallback } from 'react';
 
-interface AuthState {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-}
+export function useAuth() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-interface SignInResponse {
-  success: boolean;
-  error?: string;
-}
-
-interface CheckResponse {
-  isValid: boolean;
-  error?: string;
-}
-
-export const useAuth = () => {
-  const [state, setState] = useState<AuthState>({
-    isAuthenticated: false,
-    isLoading: true,
-    error: null,
-  });
-
-  const authenticate = async (initData: string) => {
-    console.log('useAuth: Starting authentication...');
+  const authenticate = useCallback(async (initData: string) => {
+    console.log('useAuth: Starting authentication process');
+    console.log('useAuth: InitData present:', !!initData);
+    
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
-      
-      console.log('useAuth: Sending authentication request...');
-      const { data } = await axios.post<SignInResponse>('/api/auth/signin', { initData }, {
-        withCredentials: true
+      console.log('useAuth: Sending authentication request to /api/auth/signin');
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ initData }),
+        credentials: 'include', // Important for cookies
       });
-      console.log('useAuth: Authentication response:', data);
 
-      if (!data.success) {
-        const errorMsg = data.error || 'Authentication failed';
-        console.error('useAuth: Authentication failed:', errorMsg);
-        throw new Error(errorMsg);
+      console.log('useAuth: Response status:', response.status);
+      const data = await response.json();
+      console.log('useAuth: Response data:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Authentication failed');
       }
 
       console.log('useAuth: Authentication successful');
-      setState({
-        isAuthenticated: true,
-        isLoading: false,
-        error: null
-      });
-
+      setIsAuthenticated(true);
+      setError(null);
       return true;
-    } catch (error) {
-      console.error('useAuth: Authentication error:', error);
-      const errorMsg = error instanceof Error ? error.message : 'Authentication failed';
-      console.error('useAuth: Error message:', errorMsg);
-      
-      setState({
-        isAuthenticated: false,
-        isLoading: false,
-        error: errorMsg
-      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to authenticate';
+      console.error('useAuth: Authentication error:', errorMessage);
+      setError(errorMessage);
+      setIsAuthenticated(false);
       return false;
     }
-  };
+  }, []);
 
-  const checkAuthStatus = async () => {
-    console.log('useAuth: Checking auth status...');
+  const checkAuth = useCallback(async () => {
+    console.log('useAuth: Checking authentication status');
     try {
-      const { data } = await axios.get<CheckResponse>('/api/auth/check', {
-        withCredentials: true
+      const response = await fetch('/api/auth/check', {
+        credentials: 'include',
       });
-      console.log('useAuth: Auth check response:', data);
       
-      if (!data.isValid) {
-        const errorMsg = data.error || 'Session expired';
-        console.error('useAuth: Auth check failed:', errorMsg);
-        throw new Error(errorMsg);
-      }
+      console.log('useAuth: Check auth response status:', response.status);
+      const data = await response.json();
+      console.log('useAuth: Check auth response data:', data);
 
-      console.log('useAuth: Auth check successful');
-      setState({
-        isAuthenticated: true,
-        isLoading: false,
-        error: null
-      });
-    } catch (error) {
-      console.error('useAuth: Auth check error:', error);
-      const errorMsg = error instanceof Error ? error.message : 'Session expired';
-      console.error('useAuth: Error message:', errorMsg);
-      
-      setState({
-        isAuthenticated: false,
-        isLoading: false,
-        error: errorMsg
-      });
+      setIsAuthenticated(response.ok);
+      setError(null);
+      return response.ok;
+    } catch (err) {
+      console.error('useAuth: Check auth error:', err);
+      setIsAuthenticated(false);
+      setError('Failed to check authentication status');
+      return false;
     }
-  };
+  }, []);
 
   return {
-    ...state,
+    isAuthenticated,
     authenticate,
-    checkAuthStatus
+    checkAuth,
+    error,
   };
-}; 
+} 
