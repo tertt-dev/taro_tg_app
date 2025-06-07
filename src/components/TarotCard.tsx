@@ -24,9 +24,9 @@ export function TarotCard({
   size = 'md',
 }: TarotCardProps) {
   const sizeClasses = {
-    sm: 'w-36 h-60',
-    md: 'w-48 h-80',
-    lg: 'w-60 h-96',
+    sm: 'w-24 h-36',
+    md: 'w-40 h-60',
+    lg: 'w-56 h-84',
   };
 
   const handleClick = () => {
@@ -41,34 +41,42 @@ export function TarotCard({
       onClick={handleClick}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
+      initial={false}
+      animate={{ rotateY: isRevealed ? 0 : 180 }}
+      transition={{ duration: 0.6 }}
+      style={{ perspective: 1000 }}
     >
       <div className="relative w-full h-full rounded-xl overflow-hidden">
         {isRevealed ? (
-            <Image
-              src={image}
-              alt={name}
+          <Image
+            src={image}
+            alt={name}
             fill
-            className="object-cover"
+            className="object-contain"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
+          />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-purple-900">
-            <div className="absolute inset-0 bg-[url('/card-back-pattern.svg')] opacity-20" />
-                </div>
-              )}
-              </div>
+          <Image
+            src="/Cards-png/CardBacks.png"
+            alt="Card Back"
+            fill
+            className="object-contain"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        )}
+      </div>
 
       {showDescription && isRevealed && (
         <div className="absolute inset-0 flex items-end">
           <div className="w-full p-4 bg-gradient-to-t from-black/80 to-transparent">
             {position && (
-              <div className="text-sm text-gray-400 mb-1">{position}</div>
-              )}
+              <div className="text-sm text-purple-300 mb-1">{position}</div>
+            )}
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm text-gray-400">{cardNumber}</span>
-              <h3 className="text-lg font-semibold">{name}</h3>
+              <span className="text-sm text-purple-300">{cardNumber}</span>
+              <h3 className="text-lg font-semibold text-white">{name}</h3>
             </div>
-            <p className="text-sm text-gray-300 line-clamp-2">{description}</p>
+            <p className="text-sm text-gray-200 line-clamp-2">{description}</p>
           </div>
         </div>
       )}

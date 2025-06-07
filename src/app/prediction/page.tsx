@@ -6,8 +6,35 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useTelegram } from '@/components/TelegramProvider';
 import { generatePrediction } from '@/utils/predictions';
-import type { Prediction } from '@/utils/predictions';
+import type { Prediction, SpreadType } from '@/utils/predictions';
 import { TarotCard } from '@/components/TarotCard';
+
+const SPREADS = [
+  {
+    id: 'daily' as SpreadType,
+    name: 'Карта дня',
+    description: 'Одна карта, отражающая энергию и основную тему дня',
+    cardCount: 1,
+  },
+  {
+    id: 'past-present-future' as SpreadType,
+    name: 'Прошлое, настоящее, будущее',
+    description: 'Трехкарточный расклад для понимания временной динамики ситуации',
+    cardCount: 3,
+  },
+  {
+    id: 'celtic-cross' as SpreadType,
+    name: 'Кельтский крест',
+    description: 'Подробный расклад из 10 карт для глубокого анализа ситуации',
+    cardCount: 10,
+  },
+  {
+    id: 'relationship' as SpreadType,
+    name: 'Отношения',
+    description: 'Пятикарточный расклад для анализа отношений и их перспектив',
+    cardCount: 5,
+  }
+];
 
 // Safe localStorage wrapper
 const storage = {
@@ -33,9 +60,10 @@ const storage = {
 
 export default function PredictionPage() {
   const router = useRouter();
-  const { isAuthenticated } = useTelegram();
+  const { isAuthenticated, user } = useTelegram();
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedSpread, setSelectedSpread] = useState<SpreadType | null>(null);
 
   useEffect(() => {
     const savedPredictions = storage.get('predictions') || [];
@@ -48,11 +76,11 @@ export default function PredictionPage() {
   };
 
   const handleNewPrediction = async () => {
-    if (isGenerating) return;
+    if (isGenerating || !selectedSpread) return;
     setIsGenerating(true);
 
     try {
-      const prediction = await generatePrediction();
+      const prediction = await generatePrediction(selectedSpread);
       savePredictions([prediction, ...predictions]);
     } catch (error) {
       console.error('Failed to generate prediction:', error);
@@ -75,7 +103,7 @@ export default function PredictionPage() {
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-xl font-semibold">Предсказание</h1>
+          <h1 className="text-xl font-semibold">Расклады</h1>
         </div>
       </div>
 
@@ -87,27 +115,53 @@ export default function PredictionPage() {
             className="space-y-8"
           >
             <div className="text-center">
-              <h1 className="text-3xl font-bold mb-4">Получить предсказание</h1>
-              <p className="text-muted-foreground mb-8">
-                Нажмите кнопку, чтобы получить предсказание на картах Таро
+              <h1 className="text-3xl font-bold mb-4">Выберите расклад</h1>
+              <p className="text-gray-400 mb-8">
+                Здравствуйте, {user?.first_name}! Выберите тип расклада, который лучше всего подходит для вашего вопроса
               </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {SPREADS.map((spread) => (
+                <button
+                  key={spread.id}
+                  onClick={() => setSelectedSpread(spread.id)}
+                  className={`p-6 rounded-lg text-left transition-all ${
+                    selectedSpread === spread.id
+                      ? 'bg-purple-600 ring-2 ring-purple-400'
+                      : 'bg-gray-800 hover:bg-gray-700'
+                  }`}
+                >
+                  <h3 className="text-xl font-semibold mb-2">{spread.name}</h3>
+                  <p className="text-gray-300 text-sm mb-4">{spread.description}</p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">{spread.cardCount} карт</span>
+                    {selectedSpread === spread.id && (
+                      <span className="text-purple-200">Выбрано ✓</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className="text-center pt-6">
               <button
                 onClick={handleNewPrediction}
-                disabled={isGenerating}
-                className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isGenerating || !selectedSpread}
+                className="bg-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isGenerating ? 'Генерация...' : 'Получить предсказание'}
+                {isGenerating ? 'Подготовка расклада...' : 'Сделать расклад'}
               </button>
             </div>
 
             {predictions.length > 0 && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold">История предсказаний</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6 pt-12">
+                <h2 className="text-2xl font-semibold text-purple-400">История раскладов</h2>
+                <div className="grid grid-cols-1 gap-6">
                   {predictions.map((prediction, index) => (
                     <div
                       key={index}
-                      className="bg-white/5 rounded-xl p-6 space-y-4"
+                      className="bg-gray-800 rounded-xl p-6 space-y-4"
                     >
                       <div className="flex flex-wrap gap-4">
                         {prediction.cards.map((card, cardIndex) => (
@@ -115,16 +169,16 @@ export default function PredictionPage() {
                             key={cardIndex}
                             {...card}
                             isRevealed={true}
-                            showDescription={false}
+                            showDescription={true}
                             size="sm"
                           />
                         ))}
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <p className="text-sm text-gray-400 mb-2">
                           {prediction.date}
                         </p>
-                        <p className="text-sm">{prediction.text}</p>
+                        <p className="text-sm text-gray-300">{prediction.text}</p>
                       </div>
                     </div>
                   ))}
