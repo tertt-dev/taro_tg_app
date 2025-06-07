@@ -14,13 +14,18 @@ interface TelegramWebAppUser {
 interface TelegramWebApp {
   initData: string;
   initDataUnsafe: {
-    user: TelegramWebAppUser;
+    user?: TelegramWebAppUser;
+    query_id?: string;
+    auth_date?: number;
+    hash?: string;
   };
-  platform: string;
-  version: string;
+  platform?: string;
+  version?: string;
   viewportHeight: number;
   viewportStableHeight: number;
   isExpanded: boolean;
+  ready: () => void;
+  expand: () => void;
   onEvent: (eventType: string, callback: () => void) => void;
   offEvent: (eventType: string, callback: () => void) => void;
 }
@@ -97,23 +102,25 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
   async function authenticate(initData: string) {
     try {
-      const response = await fetch('/api/auth', {
+      const response = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ initData }),
+        credentials: 'include',
       });
 
       if (!response.ok) {
         throw new Error('Authentication failed');
       }
 
-      const userCookie = getCookie('user');
-      if (userCookie) {
-        const userData = JSON.parse(userCookie);
-        setUser(userData);
+      const data = await response.json();
+      if (data.success) {
         setIsAuthenticated(true);
+        if (webApp?.initDataUnsafe?.user) {
+          setUser(webApp.initDataUnsafe.user);
+        }
       }
     } catch (err) {
       console.error('Authentication error:', err);
@@ -125,30 +132,30 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const telegram = window.Telegram?.WebApp;
-      if (!telegram) {
-        throw new Error('Telegram WebApp is not available');
-      }
+      // Wait for Telegram WebApp script to load
+      if (typeof window !== 'undefined' && 'Telegram' in window) {
+        const telegram = window.Telegram?.WebApp;
+        
+        if (!telegram) {
+          throw new Error('Telegram WebApp is not available');
+        }
 
-      if (!isTelegramWebApp(telegram)) {
-        throw new Error('Invalid Telegram WebApp object');
-      }
+        // Initialize WebApp
+        setWebApp(telegram);
+        telegram.ready();
+        telegram.expand();
 
-      setWebApp(telegram);
-      setReady(true);
+        // Set ready state
+        setReady(true);
 
-      // Check for existing authentication
-      const userCookie = getCookie('user');
-      if (userCookie) {
-        const userData = JSON.parse(userCookie);
-        setUser(userData);
-        setIsAuthenticated(true);
-      } else {
-        // If no valid cookie found, authenticate with the server
-        authenticate(telegram.initData);
+        // Authenticate if we have initData
+        if (telegram.initData) {
+          authenticate(telegram.initData);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to initialize Telegram WebApp'));
+      setReady(false);
     }
   }, []);
 

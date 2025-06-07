@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { TelegramProvider } from '@/components/TelegramProvider';
-import AuthStatus from '@/components/AuthStatus';
+import RootLayoutClient from '@/components/RootLayoutClient';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,8 +27,9 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <TelegramProvider>
-          <AuthStatus />
-          {children}
+          <RootLayoutClient>
+            {children}
+          </RootLayoutClient>
         </TelegramProvider>
       </body>
     </html>

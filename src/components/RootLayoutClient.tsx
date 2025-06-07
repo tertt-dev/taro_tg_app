@@ -21,32 +21,44 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
       }
     }
 
-    const observer = new ResizeObserver(() => {
-      updateHeight();
-    });
-
-    observer.observe(containerRef.current);
+    // Initial height update
     updateHeight();
 
-    if (webApp.onEvent) {
-      webApp.onEvent('viewportChanged', updateHeight);
-    }
+    // Set up resize observer
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(containerRef.current);
+
+    // Set up viewport change handler
+    webApp.onEvent('viewportChanged', updateHeight);
 
     return () => {
-      if (webApp.offEvent) {
-        webApp.offEvent('viewportChanged', updateHeight);
-      }
+      webApp.offEvent('viewportChanged', updateHeight);
       observer.disconnect();
     };
   }, [webApp]);
 
   if (error) {
-    return <ErrorScreen message={error.message} />;
+    return (
+      <div className="min-h-screen bg-black text-white p-4">
+        <div className="max-w-md mx-auto text-center">
+          <h1 className="text-2xl font-bold text-red-500 mb-4">Ошибка</h1>
+          <p className="text-lg mb-4">{error.message}</p>
+          <div className="text-sm text-gray-400">
+            <p>WebApp доступен: {webApp ? 'Да' : 'Нет'}</p>
+            <p>Готов к работе: {ready ? 'Да' : 'Нет'}</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  if (!ready) {
+  if (!ready || !webApp) {
     return <LoadingScreen />;
   }
 
-  return <div ref={containerRef}>{children}</div>;
+  return (
+    <div ref={containerRef} className="min-h-screen bg-black text-white">
+      {children}
+    </div>
+  );
 } 
