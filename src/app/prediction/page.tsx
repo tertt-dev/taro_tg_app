@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
-import { useTelegramWebApp } from '@/components/TelegramProvider';
+import { useTelegram } from '@/components/TelegramProvider';
 import { generatePrediction } from '@/utils/predictions';
 import type { Prediction } from '@/utils/predictions';
 import { TarotCard } from '@/components/TarotCard';
@@ -33,7 +33,7 @@ const storage = {
 
 export default function PredictionPage() {
   const router = useRouter();
-  const { ready } = useTelegramWebApp();
+  const { isAuthenticated } = useTelegram();
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -61,16 +61,8 @@ export default function PredictionPage() {
     }
   };
 
-  if (!ready) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
-          <p className="text-lg">Инициализация приложения...</p>
-          <p className="text-sm text-muted-foreground mt-2">Пожалуйста, подождите</p>
-        </div>
-      </div>
-    );
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (

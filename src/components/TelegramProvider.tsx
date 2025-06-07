@@ -1,27 +1,75 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { WebApp } from '@twa-dev/types';
 
-declare global {
-  interface Window {
-    Telegram: {
-      WebApp: WebApp;
-    };
-  }
+interface TelegramWebAppUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+  photo_url?: string;
+}
+
+interface TelegramWebApp {
+  initData: string;
+  initDataUnsafe: {
+    user: TelegramWebAppUser;
+  };
+  platform: string;
+  version: string;
+  viewportHeight: number;
+  viewportStableHeight: number;
+  isExpanded: boolean;
+  onEvent: (eventType: string, callback: () => void) => void;
+  offEvent: (eventType: string, callback: () => void) => void;
+}
+
+function isTelegramWebAppUser(obj: unknown): obj is TelegramWebAppUser {
+  if (!obj || typeof obj !== 'object') return false;
+  const candidate = obj as Record<string, unknown>;
+  return (
+    'id' in candidate &&
+    'first_name' in candidate &&
+    typeof candidate.id === 'number' &&
+    typeof candidate.first_name === 'string'
+  );
+}
+
+function isTelegramWebApp(obj: unknown): obj is TelegramWebApp {
+  if (!obj || typeof obj !== 'object') return false;
+  const candidate = obj as Record<string, unknown>;
+  return (
+    'initData' in candidate &&
+    'initDataUnsafe' in candidate &&
+    'platform' in candidate &&
+    'version' in candidate &&
+    'viewportHeight' in candidate &&
+    'viewportStableHeight' in candidate &&
+    'isExpanded' in candidate &&
+    'onEvent' in candidate &&
+    'offEvent' in candidate &&
+    typeof candidate.initData === 'string' &&
+    typeof candidate.initDataUnsafe === 'object' &&
+    typeof candidate.platform === 'string' &&
+    typeof candidate.version === 'string' &&
+    typeof candidate.viewportHeight === 'number' &&
+    typeof candidate.viewportStableHeight === 'number' &&
+    typeof candidate.isExpanded === 'boolean' &&
+    typeof candidate.onEvent === 'function' &&
+    typeof candidate.offEvent === 'function' &&
+    candidate.initDataUnsafe !== null &&
+    'user' in (candidate.initDataUnsafe as Record<string, unknown>) &&
+    isTelegramWebAppUser((candidate.initDataUnsafe as Record<string, unknown>).user)
+  );
 }
 
 interface TelegramContextType {
-  webApp: WebApp | null;
+  webApp: TelegramWebApp | null;
   ready: boolean;
-  error: string | null;
+  error: Error | null;
   isAuthenticated: boolean;
-  user: {
-    id?: number;
-    username?: string;
-    firstName?: string;
-    lastName?: string;
-  } | null;
+  user: TelegramWebAppUser | null;
 }
 
 const TelegramContext = createContext<TelegramContextType>({
@@ -32,77 +80,89 @@ const TelegramContext = createContext<TelegramContextType>({
   user: null,
 });
 
-export const useTelegram = () => useContext(TelegramContext);
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
 
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
-  const [webApp, setWebApp] = useState<WebApp | null>(null);
+  const [webApp, setWebApp] = useState<TelegramWebApp | null>(null);
   const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<TelegramWebAppUser | null>(null);
 
-  // Initialize Telegram WebApp
+  async function authenticate(initData: string) {
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ initData }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Authentication failed');
+      }
+
+      const userCookie = getCookie('user');
+      if (userCookie) {
+        const userData = JSON.parse(userCookie);
+        setUser(userData);
+        setIsAuthenticated(true);
+      }
+    } catch (err) {
+      console.error('Authentication error:', err);
+      setError(err instanceof Error ? err : new Error('Ошибка аутентификации'));
+      setIsAuthenticated(false);
+      setUser(null);
+    }
+  }
+
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const app = window.Telegram.WebApp;
-      setWebApp(app);
+    try {
+      const telegram = window.Telegram?.WebApp;
+      if (!telegram) {
+        throw new Error('Telegram WebApp is not available');
+      }
+
+      if (!isTelegramWebApp(telegram)) {
+        throw new Error('Invalid Telegram WebApp object');
+      }
+
+      setWebApp(telegram);
       setReady(true);
-      console.log('Found Telegram WebApp:', app);
-    } else {
-      setError('WebApp не доступен');
+
+      // Check for existing authentication
+      const userCookie = getCookie('user');
+      if (userCookie) {
+        const userData = JSON.parse(userCookie);
+        setUser(userData);
+        setIsAuthenticated(true);
+      } else {
+        // If no valid cookie found, authenticate with the server
+        authenticate(telegram.initData);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to initialize Telegram WebApp'));
     }
   }, []);
 
-  // Handle authentication
-  useEffect(() => {
-    const authenticate = async () => {
-      if (!webApp?.initData) {
-        setError('Ошибка: отсутствуют данные инициализации');
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/auth', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ initData: webApp.initData }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Ошибка аутентификации');
-        }
-
-        setIsAuthenticated(true);
-        setUser(data.user);
-        setError(null);
-      } catch (err) {
-        console.error('Authentication error:', err);
-        setError(err instanceof Error ? err.message : 'Ошибка аутентификации');
-        setIsAuthenticated(false);
-        setUser(null);
-      }
-    };
-
-    if (ready && webApp) {
-      authenticate();
-    }
-  }, [ready, webApp]);
-
   return (
-    <TelegramContext.Provider
-      value={{
-        webApp,
-        ready,
-        error,
-        isAuthenticated,
-        user,
-      }}
-    >
+    <TelegramContext.Provider value={{ webApp, ready, error, isAuthenticated, user }}>
       {children}
     </TelegramContext.Provider>
   );
+}
+
+export function useTelegram() {
+  const context = useContext(TelegramContext);
+  if (context === undefined) {
+    throw new Error('useTelegram must be used within a TelegramProvider');
+  }
+  return context;
 } 

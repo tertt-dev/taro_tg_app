@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { TelegramProvider } from '@/components/TelegramProvider';
-import { AuthStatus } from '@/components/AuthStatus';
+import AuthStatus from '@/components/AuthStatus';
 
 const inter = Inter({ subsets: ['latin'] });
 
