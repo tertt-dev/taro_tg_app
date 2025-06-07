@@ -134,6 +134,8 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
     let checkInterval: NodeJS.Timeout | null = null;
+    let initAttempts = 0;
+    const MAX_ATTEMPTS = 10;
 
     const cleanup = () => {
       mounted = false;
@@ -148,6 +150,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       try {
         // For test mode, use mock data
         if (isTestMode) {
+          console.log('Running in test mode');
           const mockApp = createMockWebApp();
           setWebApp(mockApp);
           setReady(true);
@@ -155,14 +158,26 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
+        console.log('Checking for Telegram WebApp...');
+        console.log('Window.Telegram:', window?.Telegram);
+        console.log('Window.Telegram.WebApp:', window?.Telegram?.WebApp);
+
         // Check if we're running inside Telegram WebApp
         const telegram = window?.Telegram?.WebApp;
         if (!telegram) {
-          setError(new Error('Telegram WebApp не доступен. Пожалуйста, откройте приложение через Telegram.'));
-          setReady(true);
+          console.log('Telegram WebApp not found');
+          initAttempts++;
+          
+          if (initAttempts >= MAX_ATTEMPTS) {
+            console.log('Max attempts reached, showing error');
+            setError(new Error('Telegram WebApp не доступен. Пожалуйста, откройте приложение через Telegram.'));
+            setReady(true);
+          }
           return;
         }
 
+        console.log('Telegram WebApp found, initializing...');
+        
         // Initialize WebApp
         telegram.ready();
         telegram.expand();
@@ -170,6 +185,9 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         // Set theme colors
         telegram.setHeaderColor('#000000');
         telegram.setBackgroundColor('#000000');
+        
+        console.log('WebApp initialized successfully');
+        console.log('User data:', telegram.initDataUnsafe?.user);
         
         setWebApp(telegram);
         setReady(true);
@@ -179,6 +197,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
           clearInterval(checkInterval);
         }
       } catch (err) {
+        console.error('Error initializing WebApp:', err);
         if (mounted) {
           setError(err instanceof Error ? err : new Error('Не удалось инициализировать Telegram WebApp'));
           setReady(true);
@@ -191,15 +210,20 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
     // If not in test mode and WebApp is not available, start checking
     if (!isTestMode && !window?.Telegram?.WebApp) {
+      console.log('Starting WebApp check interval...');
       checkInterval = setInterval(() => {
         if (window?.Telegram?.WebApp) {
+          console.log('WebApp found in interval check');
           initWebApp();
+        } else {
+          console.log('WebApp not found in interval check');
         }
       }, 1000);
 
       // Set timeout for initial availability check
       setTimeout(() => {
         if (mounted && !window?.Telegram?.WebApp) {
+          console.log('Initial timeout reached, WebApp still not found');
           setError(new Error('Telegram WebApp не доступен. Пожалуйста, откройте приложение через Telegram.'));
           setReady(true);
         }
