@@ -11,7 +11,7 @@ function validateEnvironment() {
   const missingVars = [];
   
   console.log('Checking environment variables:');
-  console.log('BOT_TOKEN length:', BOT_TOKEN?.length);
+  console.log('BOT_TOKEN:', BOT_TOKEN);
   console.log('JWT_SECRET length:', JWT_SECRET?.length);
   
   if (!BOT_TOKEN || BOT_TOKEN.length === 0) {
@@ -32,6 +32,9 @@ function validateEnvironment() {
 
 function checkSignature(initData: string, botToken: string): boolean {
   try {
+    console.log('Checking signature for initData:', initData);
+    console.log('Using bot token:', botToken);
+
     const urlParams = new URLSearchParams(initData);
     const hash = urlParams.get('hash');
     
@@ -39,6 +42,8 @@ function checkSignature(initData: string, botToken: string): boolean {
       console.log('No hash found in initData');
       return false;
     }
+
+    console.log('Found hash:', hash);
 
     // Remove hash from data before checking signature
     urlParams.delete('hash');
@@ -50,10 +55,15 @@ function checkSignature(initData: string, botToken: string): boolean {
 
     const dataCheckString = dataCheckArr.join('\n');
 
+    console.log('Data check array:', dataCheckArr);
+    console.log('Data check string:', dataCheckString);
+
     // Calculate secret key
     const secretKey = createHash('sha256')
       .update(botToken)
       .digest();
+
+    console.log('Secret key (hex):', secretKey.toString('hex'));
 
     // Calculate data signature
     const hmac = createHmac('sha256', secretKey);
