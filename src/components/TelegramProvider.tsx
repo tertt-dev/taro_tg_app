@@ -28,6 +28,7 @@ interface TelegramWebApp {
   expand: () => void;
   onEvent: (eventType: string, callback: () => void) => void;
   offEvent: (eventType: string, callback: () => void) => void;
+  setViewportHeight?: (height: number) => void;
 }
 
 interface TelegramContextType {

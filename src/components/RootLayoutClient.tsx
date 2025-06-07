@@ -14,9 +14,9 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
     }
 
     function updateHeight() {
-      if (containerRef.current && webApp) {
+      if (containerRef.current && webApp && webApp.setViewportHeight) {
         const height = containerRef.current.scrollHeight;
-        webApp.viewportHeight = height;
+        webApp.setViewportHeight(height);
       }
     }
 
