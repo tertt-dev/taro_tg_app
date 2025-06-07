@@ -1,6 +1,5 @@
 'use client'
 
-import { ParticlesBackground } from '@/components/ParticlesBackground'
 import { BottomNav } from '@/components/BottomNav'
 import { TelegramProvider } from '@/components/TelegramProvider'
 import dynamic from 'next/dynamic'

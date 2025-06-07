@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import type { WebApp } from '@/types/telegram-webapp';
 
 interface TelegramContextType {

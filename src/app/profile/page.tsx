@@ -36,6 +36,28 @@ const themes: Theme[] = [
   { id: 'dark', name: 'Тёмная', icon: Moon },
 ];
 
+// Safe localStorage wrapper
+const storage = {
+  get: (key: string) => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    } catch (error) {
+      console.error('Failed to get from localStorage:', error);
+      return null;
+    }
+  },
+  set: (key: string, value: unknown) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error);
+    }
+  }
+};
+
 export default function ProfilePage() {
   const { webApp, ready, error } = useTelegramWebApp();
   const [theme, setTheme] = useState<Theme['id']>('dark');
@@ -58,12 +80,19 @@ export default function ProfilePage() {
     }
   }, [webApp]);
 
-  // Initialize user data and load predictions
+  // Load saved predictions on mount
   useEffect(() => {
-    console.log('Profile page: checking user data...');
+    const savedPredictions = storage.get('predictions');
+    if (savedPredictions) {
+      setPredictions(savedPredictions);
+    }
+  }, []);
+
+  // Initialize user data
+  useEffect(() => {
+    let userData = webApp?.initDataUnsafe?.user;
     
     // Try to get user data from URL if not available in WebApp
-    let userData = webApp?.initDataUnsafe?.user;
     if (!userData && typeof window !== 'undefined') {
       try {
         const params = new URLSearchParams(window.location.search);
@@ -71,22 +100,13 @@ export default function ProfilePage() {
         if (tgWebAppData) {
           const parsedData = JSON.parse(atob(tgWebAppData));
           userData = parsedData;
-          console.log('Got user data from URL:', userData);
         }
       } catch (error) {
         console.error('Failed to parse URL data:', error);
       }
     }
-
-    console.log('Profile page: user data:', userData);
     
     if (userData?.id) {
-      // Load predictions from localStorage
-      const savedPredictions = localStorage.getItem('predictions');
-      if (savedPredictions) {
-        setPredictions(JSON.parse(savedPredictions));
-      }
-      
       // Create or update user in database
       db.createOrUpdateUser({
         id: userData.id,
@@ -105,15 +125,13 @@ export default function ProfilePage() {
         photo_url: userData.photo_url,
         language_code: userData.language_code
       });
-    } else {
-      console.warn('Profile page: no user data available');
     }
     setIsLoading(false);
   }, [webApp?.initDataUnsafe?.user]);
 
   const handleThemeChange = (newTheme: Theme['id']) => {
     setTheme(newTheme);
-    // Here you can implement actual theme change logic
+    storage.set('theme', newTheme);
   };
 
   const recentPredictions = predictions.slice(0, 5); // Show only 5 most recent predictions
@@ -200,83 +218,83 @@ export default function ProfilePage() {
                   />
                 </div>
               )}
-              <div className="flex-1">
-                <h2 className="text-xl font-semibold">
+              <div>
+                <h2 className="text-2xl font-bold">
                   {userData.first_name} {userData.last_name}
                 </h2>
                 {userData.username && (
-                  <p className="text-muted-foreground">
-                    @{userData.username}
-                  </p>
+                  <p className="text-muted-foreground">@{userData.username}</p>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white/5 rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <History className="w-5 h-5" />
-                  <h3 className="text-lg font-semibold">История предсказаний</h3>
-                </div>
-                {recentPredictions.length > 0 ? (
-                  <div className="space-y-4">
-                    {recentPredictions.map((prediction, index) => (
-                      <div key={index} className="flex items-start gap-4">
-                        <div className="w-12 h-16 rounded-lg overflow-hidden">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Тема</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {themes.map((t) => {
+                  const Icon = t.icon;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => handleThemeChange(t.id)}
+                      className={`p-4 rounded-lg border transition-colors ${
+                        theme === t.id
+                          ? 'border-primary bg-primary/10'
+                          : 'border-white/10 hover:border-white/20'
+                      }`}
+                    >
+                      <Icon className="w-6 h-6 mb-2" />
+                      <span>{t.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Недавние предсказания</h3>
+                <button className="text-primary hover:text-primary/80 transition-colors flex items-center gap-2">
+                  <History className="w-4 h-4" />
+                  <span>История</span>
+                </button>
+              </div>
+
+              {recentPredictions.length > 0 ? (
+                <div className="space-y-4">
+                  {recentPredictions.map((prediction, index) => (
+                    <div
+                      key={index}
+                      className="p-4 rounded-lg border border-white/10 space-y-2"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden">
                           <Image
                             src={prediction.image}
                             alt={prediction.name}
                             width={48}
-                            height={64}
+                            height={48}
                             className="object-cover"
                           />
                         </div>
                         <div>
-                          <p className="font-medium">{prediction.name}</p>
-                          <p className="text-sm text-muted-foreground">{prediction.date}</p>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {prediction.currentMeaning || prediction.text}
+                          <h4 className="font-medium">{prediction.name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {prediction.date}
                           </p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">
-                    У вас пока нет предсказаний. Сделайте первое предсказание, чтобы увидеть его здесь.
-                  </p>
-                )}
-              </div>
-
-              <div className="bg-white/5 rounded-xl p-6">
-                <h3 className="text-lg font-semibold mb-4">Настройки</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">
-                      Тема оформления
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {themes.map((t) => {
-                        const Icon = t.icon;
-                        return (
-                          <button
-                            key={t.id}
-                            onClick={() => handleThemeChange(t.id)}
-                            className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-                              theme === t.id
-                                ? 'bg-primary text-primary-foreground'
-                                : 'hover:bg-white/10'
-                            }`}
-                          >
-                            <Icon className="w-4 h-4" />
-                            <span>{t.name}</span>
-                          </button>
-                        );
-                      })}
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {prediction.text}
+                      </p>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-8">
+                  У вас пока нет предсказаний
+                </p>
+              )}
             </div>
           </motion.div>
         )}

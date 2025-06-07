@@ -24,6 +24,8 @@ interface MainButton {
   offClick: (callback: () => void) => void;
 }
 
+type TelegramEventHandler = (...args: unknown[]) => void;
+
 interface WebApp {
   initData: string;
   initDataUnsafe: {
@@ -44,8 +46,8 @@ interface WebApp {
   viewportHeight: number;
   viewportStableHeight: number;
   isExpanded: boolean;
-  onEvent(eventType: string, eventHandler: (...args: any[]) => void): void;
-  offEvent(eventType: string, eventHandler: (...args: any[]) => void): void;
+  onEvent(eventType: string, eventHandler: TelegramEventHandler): void;
+  offEvent(eventType: string, eventHandler: TelegramEventHandler): void;
   ready(): void;
   expand(): void;
   close(): void;

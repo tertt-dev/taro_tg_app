@@ -1,3 +1,25 @@
+// Safe localStorage wrapper
+const storage = {
+  get: (key: string) => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    } catch (error) {
+      console.error('Failed to get from localStorage:', error);
+      return null;
+    }
+  },
+  set: (key: string, value: unknown) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error);
+    }
+  }
+};
+
 interface UserData {
   id: number;
   first_name: string;
@@ -26,24 +48,15 @@ class Database {
   }
 
   private loadFromLocalStorage() {
-    try {
-      const data = localStorage.getItem('tarot_users');
-      if (data) {
-        const parsed = JSON.parse(data);
-        this.users = new Map(Object.entries(parsed).map(([key, value]) => [Number(key), value as UserData]));
-      }
-    } catch (error) {
-      console.error('Failed to load user data:', error);
+    const data = storage.get('tarot_users');
+    if (data) {
+      this.users = new Map(Object.entries(data).map(([id, user]) => [Number(id), user as UserData]));
     }
   }
 
   private saveToLocalStorage() {
-    try {
-      const data = Object.fromEntries(this.users);
-      localStorage.setItem('tarot_users', JSON.stringify(data));
-    } catch (error) {
-      console.error('Failed to save user data:', error);
-    }
+    const data = Object.fromEntries(this.users.entries());
+    storage.set('tarot_users', data);
   }
 
   public getUser(userId: number): UserData | undefined {
@@ -79,6 +92,11 @@ class Database {
 
   public getPredictionCount(userId: number): number {
     return this.users.get(userId)?.predictions_count || 0;
+  }
+
+  public deleteUser(id: number) {
+    this.users.delete(id);
+    this.saveToLocalStorage();
   }
 }
 
