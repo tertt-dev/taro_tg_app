@@ -30,7 +30,7 @@ export interface TelegramWebApp {
   viewportHeight?: number;
   viewportStableHeight?: number;
   isExpanded?: boolean;
-  setViewportHeight?: (height: number) => void;
+  setViewportHeight: (height: number) => void;
   BackButton: {
     isVisible: boolean;
     show: () => void;

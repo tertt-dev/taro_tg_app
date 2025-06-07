@@ -13,22 +13,22 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
       return;
     }
 
-    function updateHeight() {
-      if (containerRef.current && webApp) {
-        const height = containerRef.current.scrollHeight;
-        webApp.viewportHeight = height;
-      }
+    // Expand the WebApp viewport
+    if (webApp.expand) {
+      webApp.expand();
     }
 
-    // Initial height update
-    updateHeight();
-
-    // Set up resize observer
-    const observer = new ResizeObserver(updateHeight);
-    observer.observe(containerRef.current);
+    // Set up viewport change handler
+    if (webApp.onEvent) {
+      webApp.onEvent('viewportChanged', () => {
+        // Handle viewport changes if needed
+      });
+    }
 
     return () => {
-      observer.disconnect();
+      if (webApp.offEvent) {
+        webApp.offEvent('viewportChanged', () => {});
+      }
     };
   }, [webApp]);
 
