@@ -6,7 +6,7 @@ export function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center">
       <motion.div
-        className="w-16 h-16 border-4 border-purple-500/20 border-t-purple-500 rounded-full"
+        className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full"
         animate={{
           rotate: 360
         }}

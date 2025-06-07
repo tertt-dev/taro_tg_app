@@ -43,7 +43,7 @@ export function BottomNav() {
                 onClick={() => router.push(item.path)}
                 className={cn(
                   'flex flex-col items-center justify-center min-w-[64px] py-1 px-2 rounded-lg transition-all duration-200',
-                  isActive ? 'text-purple-500' : 'text-gray-400 hover:text-purple-500'
+                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'
                 )}
               >
                 <item.icon className={cn(

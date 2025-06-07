@@ -1,67 +1,107 @@
 'use client'
 
-import { useCallback } from 'react'
-import { loadFull } from 'tsparticles'
-import type { Engine } from 'tsparticles-engine'
-import Particles from 'react-tsparticles'
+import { useEffect, useRef } from 'react'
 
 export function ParticlesBackground() {
-  const particlesInit = useCallback(async (engine: Engine) => {
-    await loadFull(engine)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    // Set canvas size
+    const setCanvasSize = () => {
+      if (!canvas) return
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    setCanvasSize()
+    window.addEventListener('resize', setCanvasSize)
+
+    // Particle class
+    class Particle {
+      x: number
+      y: number
+      size: number
+      speedX: number
+      speedY: number
+      color: string
+      width: number
+      height: number
+
+      constructor(width: number, height: number) {
+        this.width = width
+        this.height = height
+        this.x = Math.random() * width
+        this.y = Math.random() * height
+        this.size = Math.random() * 3 + 1
+        this.speedX = Math.random() * 2 - 1
+        this.speedY = Math.random() * 2 - 1
+        this.color = `rgba(255, 51, 102, ${Math.random() * 0.5 + 0.2})`
+      }
+
+      update() {
+        this.x += this.speedX
+        this.y += this.speedY
+
+        if (this.x > this.width) this.x = 0
+        if (this.x < 0) this.x = this.width
+        if (this.y > this.height) this.y = 0
+        if (this.y < 0) this.y = this.height
+      }
+
+      draw(ctx: CanvasRenderingContext2D) {
+        ctx.fillStyle = this.color
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    // Create particles
+    const particles: Particle[] = []
+    for (let i = 0; i < 100; i++) {
+      particles.push(new Particle(canvas.width, canvas.height))
+    }
+
+    // Animation loop
+    let animationFrameId: number
+    const animate = () => {
+      if (!ctx || !canvas) return
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      
+      particles.forEach(particle => {
+        particle.update()
+        particle.draw(ctx)
+      })
+      
+      animationFrameId = requestAnimationFrame(animate)
+    }
+    animate()
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', setCanvasSize)
+      cancelAnimationFrame(animationFrameId)
+    }
   }, [])
 
   return (
-    <Particles
-      id="tsparticles"
-      init={particlesInit}
-      options={{
-        background: {
-          color: {
-            value: '#000000',
-          },
-        },
-        fpsLimit: 120,
-        particles: {
-          color: {
-            value: '#ffffff',
-          },
-          links: {
-            color: '#ffffff',
-            distance: 150,
-            enable: true,
-            opacity: 0.2,
-            width: 1,
-          },
-          move: {
-            direction: 'none',
-            enable: true,
-            outModes: {
-              default: 'bounce',
-            },
-            random: false,
-            speed: 1,
-            straight: false,
-          },
-          number: {
-            density: {
-              enable: true,
-              area: 800,
-            },
-            value: 80,
-          },
-          opacity: {
-            value: 0.3,
-          },
-          shape: {
-            type: 'circle',
-          },
-          size: {
-            value: { min: 1, max: 3 },
-          },
-        },
-        detectRetina: true,
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 0,
+        pointerEvents: 'none',
+        background: 'transparent'
       }}
-      className="fixed inset-0 -z-10"
     />
   )
 } 

@@ -1,24 +1,59 @@
 'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 import { useTelegram } from '@/components/TelegramProvider';
+import { TarotCard } from '@/components/TarotCard';
+import { TAROT_CARDS } from '@/utils/predictions';
+import Image from 'next/image';
 
-const DECK = {
-  name: 'Классическое Таро Райдера-Уэйта',
-  description: 'Самая известная и универсальная колода Таро, созданная в 1909 году. Каждая карта наполнена символизмом и глубоким смыслом, что делает её идеальной как для начинающих, так и для опытных тарологов.',
-  cardCount: 78,
-  previewCards: [
-    '/Cards-png/RWS_Tarot_01_Magician.png',
-    '/Cards-png/RWS_Tarot_02_High_Priestess.png',
-    '/Cards-png/RWS_Tarot_03_Empress.png',
-    '/Cards-png/RWS_Tarot_04_Emperor.png',
-  ]
-};
+interface CardDetailsProps {
+  card: typeof TAROT_CARDS[number];
+  onClose: () => void;
+}
+
+const CardDetails = ({ card, onClose }: CardDetailsProps) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+  >
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.9, opacity: 0 }}
+      className="bg-zinc-900/90 rounded-xl p-6 max-w-lg w-full relative"
+    >
+      <button
+        onClick={onClose}
+        className="absolute right-4 top-4 p-2 hover:bg-white/10 rounded-lg transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
+      <div className="flex flex-col items-center">
+        <div className="w-48 h-80 mb-6">
+          <TarotCard
+            {...card}
+            isRevealed={true}
+            onReveal={() => {}}
+            size="sm"
+            isInteractive={false}
+          />
+        </div>
+        <h2 className="text-2xl font-semibold mb-4">{card.name}</h2>
+        <p className="text-muted-foreground text-center leading-relaxed">
+          {card.description}
+        </p>
+      </div>
+    </motion.div>
+  </motion.div>
+);
 
 export default function DeckPage() {
   const { user } = useTelegram();
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
 
   return (
     <div className="min-h-screen">
@@ -37,7 +72,7 @@ export default function DeckPage() {
           
           <div className="glass-panel overflow-hidden">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-2">
-              {DECK.previewCards.map((card, index) => (
+              {TAROT_CARDS.map((card, index) => (
                 <motion.div
                   key={index}
                   className="relative aspect-[2/3] rounded overflow-hidden"
@@ -46,7 +81,7 @@ export default function DeckPage() {
                   transition={{ delay: index * 0.1 }}
                 >
                   <Image
-                    src={card}
+                    src={card.image}
                     alt={`Preview card ${index + 1}`}
                     fill
                     className="object-contain"
@@ -54,25 +89,18 @@ export default function DeckPage() {
                 </motion.div>
               ))}
             </div>
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-purple-400 mb-3">{DECK.name}</h2>
-              <p className="text-gray-300 mb-6">{DECK.description}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">{DECK.cardCount} карт</span>
-                <Link 
-                  href="/prediction"
-                  className="mystic-button"
-                >
-                  Начать расклад
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-            </div>
           </div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {selectedCard !== null && (
+          <CardDetails
+            card={TAROT_CARDS[selectedCard]}
+            onClose={() => setSelectedCard(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 } 

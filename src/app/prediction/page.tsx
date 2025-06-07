@@ -1,52 +1,117 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
 import { useTelegram } from '@/components/TelegramProvider';
-import { SpreadSelector } from '@/components/SpreadSelector';
-import { type SpreadType } from '@/components/SpreadSelector';
+import { Header } from '@/components/Header';
+import { TarotCard } from '@/components/TarotCard';
+import { HistoryPanel } from '@/components/HistoryPanel';
+import { generatePrediction, type Prediction } from '@/utils/predictions';
 
 export default function PredictionPage() {
   const router = useRouter();
-  const { user } = useTelegram();
+  const { ready } = useTelegram();
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [revealedCards, setRevealedCards] = useState<number[]>([]);
 
-  const handleSpreadSelect = (spread: SpreadType) => {
-    router.push(`/prediction/${spread.id}`);
+  useEffect(() => {
+    if (!ready) {
+      router.push('/');
+    }
+  }, [ready, router]);
+
+  useEffect(() => {
+    const savedPredictions = localStorage.getItem('predictions');
+    if (savedPredictions) {
+      setPredictions(JSON.parse(savedPredictions));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('predictions', JSON.stringify(predictions));
+  }, [predictions]);
+
+  const handleNewPrediction = async () => {
+    setIsGenerating(true);
+    setRevealedCards([]);
+    try {
+      const prediction = await generatePrediction();
+      setPredictions((prev) => [prediction, ...prev]);
+    } catch (error) {
+      console.error('Failed to generate prediction:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const toggleHistory = () => {
+    setShowHistory(!showHistory);
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="sticky top-0 z-10 backdrop-blur-md bg-black/50 border-b border-white/10">
-        <div className="container mx-auto px-4 h-16 flex items-center gap-4">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <h1 className="text-xl font-semibold">Расклады</h1>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-black text-white">
+      <Header onHistoryClick={toggleHistory} />
+      
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
+        <div className="flex flex-col items-center justify-center">
+          <motion.button
+            onClick={handleNewPrediction}
+            disabled={isGenerating}
+            className={`
+              px-6 py-3 rounded-lg bg-purple-600 text-white font-medium
+              transition-colors duration-200
+              ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'}
+            `}
+            whileHover={{ scale: isGenerating ? 1 : 1.05 }}
+            whileTap={{ scale: isGenerating ? 1 : 0.95 }}
           >
-            <div className="text-center">
-              <h1 className="text-3xl font-bold mb-4 gold-text">Выберите расклад</h1>
-              <p className="text-gray-400 mb-8">
-                Здравствуйте, {user?.first_name}! Выберите тип расклада, который лучше всего подходит для вашего вопроса
-              </p>
-            </div>
+            {isGenerating ? 'Гадаем...' : 'Получить предсказание'}
+          </motion.button>
 
-            <SpreadSelector onSelect={handleSpreadSelect} />
-          </motion.div>
+          {predictions.length > 0 && (
+            <div className="mt-8 w-full max-w-2xl">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-zinc-900 rounded-lg p-6"
+              >
+                <h2 className="text-xl font-semibold mb-4">
+                  {predictions[0].date}
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  {predictions[0].cards.map((card, index) => (
+                    <TarotCard
+                      key={index}
+                      name={card.name}
+                      image={card.image}
+                      description={card.description || ''}
+                      isRevealed={revealedCards.includes(index)}
+                      onReveal={() => {
+                        if (!revealedCards.includes(index)) {
+                          setRevealedCards(prev => [...prev, index]);
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+                <p className="text-gray-300 leading-relaxed">
+                  {predictions[0].text}
+                </p>
+              </motion.div>
+            </div>
+          )}
         </div>
       </main>
+
+      <HistoryPanel
+        isOpen={showHistory}
+        onClose={toggleHistory}
+        predictions={predictions}
+      />
     </div>
   );
 } 
