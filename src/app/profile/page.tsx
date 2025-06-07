@@ -4,46 +4,25 @@ import { useTelegram } from '@/components/TelegramProvider';
 import Image from 'next/image';
 
 export default function ProfilePage() {
-  const { isAuthenticated, user } = useTelegram();
+  const { user } = useTelegram();
 
-  if (!isAuthenticated) {
+  if (!user) {
     return null;
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-purple-500 mb-8">Профиль</h1>
+        <h1 className="text-3xl font-bold text-purple-500 mb-6">Профиль</h1>
         <div className="bg-gray-800 rounded-lg p-6">
           <div className="flex items-start space-x-6">
-            {user?.photo_url && (
-              <div className="flex-shrink-0">
-                <div className="relative w-24 h-24 rounded-full overflow-hidden">
-                  <Image
-                    src={user.photo_url}
-                    alt={user.first_name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-            )}
-            <div className="flex-grow space-y-4">
-              <div>
-                <h2 className="text-lg font-semibold text-purple-400">Имя</h2>
-                <p className="text-xl">{user?.first_name} {user?.last_name}</p>
-              </div>
-              {user?.username && (
-                <div>
-                  <h2 className="text-lg font-semibold text-purple-400">Имя пользователя</h2>
-                  <p className="text-xl">@{user.username}</p>
-                </div>
+            <div className="flex-grow">
+              <h2 className="text-2xl font-semibold mb-2">{user.first_name} {user.last_name}</h2>
+              {user.username && (
+                <p className="text-gray-400 mb-4">@{user.username}</p>
               )}
-              {user?.language_code && (
-                <div>
-                  <h2 className="text-lg font-semibold text-purple-400">Язык</h2>
-                  <p className="text-xl">{user.language_code.toUpperCase()}</p>
-                </div>
+              {user.language_code && (
+                <p className="text-sm text-gray-500">Язык: {user.language_code.toUpperCase()}</p>
               )}
             </div>
           </div>
@@ -62,6 +41,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 } 

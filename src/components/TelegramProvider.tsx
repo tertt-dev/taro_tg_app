@@ -2,7 +2,42 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import type { TelegramWebApp, TelegramWebAppUser } from '@/types/telegram';
+
+interface TelegramWebAppUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+}
+
+interface TelegramWebAppInitData {
+  query_id?: string;
+  user?: TelegramWebAppUser;
+  auth_date: string;
+  hash: string;
+}
+
+interface MainButton {
+  text: string;
+  show: () => void;
+  hide: () => void;
+  enable: () => void;
+  disable: () => void;
+  showProgress: (leaveActive: boolean) => void;
+  hideProgress: () => void;
+  onClick: (callback: () => void) => void;
+  offClick: (callback: () => void) => void;
+  setText: (text: string) => void;
+}
+
+interface BackButton {
+  isVisible: boolean;
+  onClick: (callback: () => void) => void;
+  offClick: (callback: () => void) => void;
+  show: () => void;
+  hide: () => void;
+}
 
 interface TelegramContextType {
   webApp: TelegramWebApp | null;
@@ -22,8 +57,8 @@ const TelegramContext = createContext<TelegramContextType>({
 
 declare global {
   interface Window {
-    Telegram?: {
-      WebApp?: TelegramWebApp;
+    Telegram: {
+      WebApp: TelegramWebApp;
     };
   }
 }
@@ -51,37 +86,42 @@ const createMockWebApp = (): TelegramWebApp => ({
       language_code: "ru",
     },
     query_id: "test_query_id",
-    auth_date: Math.floor(Date.now() / 1000),
+    auth_date: "1234567890",
     hash: "test_hash",
-  },
+  } as TelegramWebAppInitData,
+  initData: "",
+  platform: "web",
+  colorScheme: "dark",
+  themeParams: {},
+  isClosingConfirmationEnabled: false,
+  headerColor: "#000000",
+  backgroundColor: "#000000",
+  setHeaderColor: () => {},
+  setBackgroundColor: () => {},
+  enableClosingConfirmation: () => {},
   onEvent: () => {},
   offEvent: () => {},
   sendData: () => {},
+  setViewportHeight: () => {},
   MainButton: {
     text: "",
-    color: "",
-    textColor: "",
-    isVisible: false,
-    isActive: true,
-    isProgressVisible: false,
     show: () => {},
     hide: () => {},
     enable: () => {},
     disable: () => {},
     showProgress: () => {},
     hideProgress: () => {},
-    setText: () => {},
     onClick: () => {},
     offClick: () => {},
-  },
+    setText: () => {},
+  } as MainButton,
   BackButton: {
     isVisible: false,
     show: () => {},
     hide: () => {},
     onClick: () => {},
     offClick: () => {},
-  },
-  platform: "web",
+  } as BackButton,
 });
 
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
@@ -89,7 +129,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const pathname = usePathname();
-  const isTestMode = pathname?.startsWith('/test');
+  const isTestMode = pathname?.startsWith('/debug');
 
   useEffect(() => {
     let mounted = true;
@@ -103,28 +143,40 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     };
 
     const initWebApp = () => {
-      // Don't initialize if component is unmounted
       if (!mounted) return;
 
       try {
         // For test mode, use mock data
         if (isTestMode) {
-          setWebApp(createMockWebApp());
+          const mockApp = createMockWebApp();
+          setWebApp(mockApp);
           setReady(true);
           setError(null);
           return;
         }
 
-        // For production mode, check for Telegram WebApp
+        // Check if we're running inside Telegram WebApp
         const telegram = window?.Telegram?.WebApp;
-        if (telegram && typeof telegram.ready === 'function') {
-          telegram.ready();
-          setWebApp(telegram);
+        if (!telegram) {
+          setError(new Error('Telegram WebApp не доступен. Пожалуйста, откройте приложение через Telegram.'));
           setReady(true);
-          setError(null);
-          if (checkInterval) {
-            clearInterval(checkInterval);
-          }
+          return;
+        }
+
+        // Initialize WebApp
+        telegram.ready();
+        telegram.expand();
+        
+        // Set theme colors
+        telegram.setHeaderColor('#000000');
+        telegram.setBackgroundColor('#000000');
+        
+        setWebApp(telegram);
+        setReady(true);
+        setError(null);
+        
+        if (checkInterval) {
+          clearInterval(checkInterval);
         }
       } catch (err) {
         if (mounted) {
@@ -139,30 +191,23 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
     // If not in test mode and WebApp is not available, start checking
     if (!isTestMode && !window?.Telegram?.WebApp) {
-      // Set timeout for initial availability check
-      const initTimeout = setTimeout(() => {
-        if (mounted && !window?.Telegram?.WebApp) {
-          setError(new Error('Telegram WebApp не доступен. Пожалуйста, откройте приложение через Telegram.'));
-          setReady(true);
-        }
-      }, 3000);
-
-      // Set up interval to check for WebApp
       checkInterval = setInterval(() => {
         if (window?.Telegram?.WebApp) {
           initWebApp();
         }
       }, 1000);
 
-      // Cleanup timeout on unmount
-      return () => {
-        clearTimeout(initTimeout);
-        cleanup();
-      };
+      // Set timeout for initial availability check
+      setTimeout(() => {
+        if (mounted && !window?.Telegram?.WebApp) {
+          setError(new Error('Telegram WebApp не доступен. Пожалуйста, откройте приложение через Telegram.'));
+          setReady(true);
+        }
+      }, 2000);
     }
 
     return cleanup;
-  }, [isTestMode]); // Only depend on isTestMode
+  }, [isTestMode]);
 
   const isAuthenticated = Boolean(webApp?.initDataUnsafe?.user);
   const user = webApp?.initDataUnsafe?.user || null;
