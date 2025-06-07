@@ -1,29 +1,21 @@
-import './globals.css'
-import { Inter, Cormorant, DM_Sans } from 'next/font/google'
-import { ClientWrapper } from '@/components/ClientWrapper'
-import Script from 'next/script'
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import Script from 'next/script';
+import './globals.css';
+import { TelegramProvider } from '@/components/TelegramProvider';
+import { AuthStatus } from '@/components/AuthStatus';
 
-const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' })
-const cormorant = Cormorant({ 
-  subsets: ['latin'],
-  variable: '--font-cormorant',
-  weight: ['400', '500', '600', '700']
-})
-const dmSans = DM_Sans({ 
-  subsets: ['latin'],
-  variable: '--font-dm-sans',
-  weight: ['400', '500', '700']
-})
+const inter = Inter({ subsets: ['latin'] });
 
-export const metadata = {
-  title: 'Таро Предсказания',
-  description: 'Узнайте свое будущее с помощью карт Таро',
-}
+export const metadata: Metadata = {
+  title: 'Таро Бот',
+  description: 'Telegram Mini App для гадания на картах Таро',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="ru">
@@ -33,11 +25,12 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
       </head>
-      <body className={`${inter.variable} ${cormorant.variable} ${dmSans.variable} min-h-screen overflow-x-hidden bg-black`}>
-        <ClientWrapper>
+      <body className={inter.className}>
+        <TelegramProvider>
+          <AuthStatus />
           {children}
-        </ClientWrapper>
+        </TelegramProvider>
       </body>
     </html>
-  )
+  );
 }

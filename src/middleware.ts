@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
+import { getIronSession } from 'iron-session';
+import { sessionOptions, SessionData } from '@/lib/session';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret';
 
@@ -14,13 +16,40 @@ const PUBLIC_PATHS = [
   '/.well-known',
 ];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if the path is public
   const isPublicPath = PUBLIC_PATHS.some(path => pathname.startsWith(path));
   if (isPublicPath) {
     return NextResponse.next();
+  }
+
+  // Skip auth check for the auth endpoint itself
+  if (pathname === '/api/auth') {
+    return NextResponse.next();
+  }
+
+  // Check if the request is for an API route
+  if (pathname.startsWith('/api/')) {
+    try {
+      const session = await getIronSession<SessionData>(request.cookies, sessionOptions);
+
+      if (!session.isLoggedIn) {
+        return NextResponse.json(
+          { error: 'Требуется авторизация' },
+          { status: 401 }
+        );
+      }
+
+      return NextResponse.next();
+    } catch (error) {
+      console.error('Session error:', error);
+      return NextResponse.json(
+        { error: 'Ошибка сессии' },
+        { status: 500 }
+      );
+    }
   }
 
   // For protected routes, check authentication
@@ -94,4 +123,8 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url));
     }
   }
+}
+
+export const config = {
+  matcher: '/api/:path*',
 } 

@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createHash, createHmac } from 'crypto';
-import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+import { getIronSession } from 'iron-session';
+import { sessionOptions, SessionData } from '@/lib/session';
 
 // Get environment variables
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const JWT_SECRET = process.env.JWT_SECRET;
 
 // Validate environment variables
 function validateEnvironment() {
@@ -12,14 +12,9 @@ function validateEnvironment() {
   
   console.log('Checking environment variables:');
   console.log('BOT_TOKEN:', BOT_TOKEN);
-  console.log('JWT_SECRET length:', JWT_SECRET?.length);
   
   if (!BOT_TOKEN || BOT_TOKEN.length === 0) {
     missingVars.push('BOT_TOKEN');
-  }
-  
-  if (!JWT_SECRET || JWT_SECRET.length === 0) {
-    missingVars.push('JWT_SECRET');
   }
   
   if (missingVars.length > 0) {
@@ -169,28 +164,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create JWT token
-    const token = jwt.sign(
-      { 
-        userId: user.id,
-        username: user.username || '',
-        firstName: user.first_name,
-        lastName: user.last_name || ''
-      },
-      JWT_SECRET!,
-      { expiresIn: '24h' }
-    );
+    // Get session and update it
+    const session = await getIronSession<SessionData>(cookies(), sessionOptions);
+    
+    session.isLoggedIn = true;
+    session.userId = user.id;
+    session.username = user.username;
+    session.firstName = user.first_name;
+    session.lastName = user.last_name;
+    
+    await session.save();
 
-    // Set JWT token in cookie
-    const response = NextResponse.json({ success: true });
-    response.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 // 24 hours
-    });
-
-    return response;
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Authentication error:', error);
     return NextResponse.json(
