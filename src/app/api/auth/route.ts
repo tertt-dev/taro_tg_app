@@ -2,17 +2,28 @@ import { NextResponse } from 'next/server';
 import { createHash, createHmac } from 'crypto';
 import jwt from 'jsonwebtoken';
 
-// Get environment variables with type assertions
-const BOT_TOKEN = process.env.BOT_TOKEN as string;
-const JWT_SECRET = process.env.JWT_SECRET as string;
+// Get environment variables
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const JWT_SECRET = process.env.JWT_SECRET;
 
-// Validate environment variables at startup
-if (!BOT_TOKEN || BOT_TOKEN.length === 0) {
-  throw new Error('BOT_TOKEN environment variable is not set or is empty');
-}
-
-if (!JWT_SECRET || JWT_SECRET.length === 0) {
-  throw new Error('JWT_SECRET environment variable is not set or is empty');
+// Validate environment variables
+function validateEnvironment() {
+  const missingVars = [];
+  
+  if (!BOT_TOKEN || BOT_TOKEN.length === 0) {
+    missingVars.push('BOT_TOKEN');
+  }
+  
+  if (!JWT_SECRET || JWT_SECRET.length === 0) {
+    missingVars.push('JWT_SECRET');
+  }
+  
+  if (missingVars.length > 0) {
+    console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
+    return false;
+  }
+  
+  return true;
 }
 
 function checkSignature(initData: string, botToken: string): boolean {
@@ -62,6 +73,14 @@ interface TelegramUser {
 
 export async function POST(request: Request) {
   try {
+    // Validate environment first
+    if (!validateEnvironment()) {
+      return NextResponse.json(
+        { error: 'Server configuration error. Please contact support.' },
+        { status: 500 }
+      );
+    }
+
     console.log('Processing authentication request...');
     const body = await request.json();
     const initData = body.initData as string;
@@ -76,8 +95,8 @@ export async function POST(request: Request) {
 
     console.log('Received initData:', initData);
 
-    // Verify signature - BOT_TOKEN is now guaranteed to be a string
-    const isValid = checkSignature(initData, BOT_TOKEN);
+    // Verify signature
+    const isValid = checkSignature(initData, BOT_TOKEN!);
     if (!isValid) {
       console.log('Invalid signature');
       return NextResponse.json(
@@ -123,7 +142,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create JWT token - JWT_SECRET is now guaranteed to be a string
+    // Create JWT token
     const token = jwt.sign(
       { 
         userId: user.id,
@@ -131,7 +150,7 @@ export async function POST(request: Request) {
         firstName: user.first_name,
         lastName: user.last_name || ''
       },
-      JWT_SECRET,
+      JWT_SECRET!,
       { expiresIn: '24h' }
     );
 
