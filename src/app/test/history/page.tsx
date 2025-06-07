@@ -3,7 +3,7 @@
 import { Header } from '@/components/Header';
 import { motion } from 'framer-motion';
 
-const mockHistory = [
+const MOCK_READINGS = [
   {
     id: 1,
     type: 'Любовный расклад',
@@ -26,31 +26,31 @@ const mockHistory = [
 
 export default function HistoryPage() {
   return (
-    <div className="min-h-screen bg-black text-white font-cormorant">
+    <div className="min-h-screen text-white font-cormorant">
       <Header />
       
-      <main className="container mx-auto px-4 py-8 max-w-lg">
+      <main className="container mx-auto px-4 py-8">
         <h2 className="text-2xl font-medium text-center mb-8">
           История раскладов
         </h2>
 
         <div className="space-y-4">
-          {mockHistory.map((reading) => (
-            <motion.div
-              key={reading.id}
-              className="bg-white/5 rounded-xl p-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.02 }}
-            >
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-xl font-medium">{reading.type}</h3>
-                <span className="text-sm text-white/60">{reading.date}</span>
+          {MOCK_READINGS.map((reading) => (
+            <div key={reading.id} className="relative rounded-xl p-4 overflow-hidden">
+              <div className="absolute inset-0">
+                <div className="absolute inset-0 bg-zinc-900"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900"></div>
               </div>
-              <div className="text-white/80">
-                Карты: {reading.cards.join(', ')}
+              <div className="relative">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-xl font-medium">{reading.type}</h3>
+                  <span className="text-sm text-zinc-400">{reading.date}</span>
+                </div>
+                <div className="text-zinc-300">
+                  Карты: {reading.cards.join(', ')}
+                </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </main>

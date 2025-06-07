@@ -10,9 +10,9 @@
   --background-end-rgb: 0, 0, 0;
   --background-start: #000000;
   --background-end: #1a1a2e;
-  --text-primary: #FFFFFF;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --accent-gold: #FFD700;
+  --text-primary: rgba(255, 255, 255, 0.9);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --accent-gold: #D4AF37;
   --accent-silver: #C0C0C0;
   --card-border: rgba(255, 255, 255, 0.1);
   --glass-bg: rgba(255, 255, 255, 0.05);
@@ -243,4 +243,18 @@ p, span, div {
 main {
   position: relative;
   z-index: 0;
+}
+
+@layer utilities {
+  .to-transparent {
+    --tw-gradient-to: transparent var(--tw-gradient-to-position);
+  }
+  .from-white\/5 {
+    --tw-gradient-from: rgb(255 255 255 / 0.05) var(--tw-gradient-from-position);
+    --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .bg-gradient-to-br {
+    background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+  }
 }

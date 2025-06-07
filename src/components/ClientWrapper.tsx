@@ -1,21 +1,21 @@
 'use client'
 
-import { ParticlesBackground } from '@/components/ParticlesBackground'
+import { VideoBackground } from '@/components/VideoBackground'
 import { BottomNav } from '@/components/BottomNav'
 
 export function ClientWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Background layer */}
-      <div className="fixed inset-0 bg-black -z-30" />
+      <div className="fixed inset-0 bg-black z-0" />
       
-      {/* Particles layer */}
-      <div className="fixed inset-0 -z-20">
-        <ParticlesBackground />
+      {/* Video background layer */}
+      <div className="fixed inset-0 z-10">
+        <VideoBackground />
       </div>
       
       {/* Content layer */}
-      <main className="flex-1 relative z-10">
+      <main className="flex-1 relative z-20">
         {children}
       </main>
       

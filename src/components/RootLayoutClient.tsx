@@ -49,7 +49,7 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
   // Show main content when ready and no errors
   return (
     <ClientWrapper>
-      <div ref={containerRef} className="min-h-screen bg-black text-white">
+      <div ref={containerRef} className="min-h-screen text-white">
         {children}
       </div>
     </ClientWrapper>

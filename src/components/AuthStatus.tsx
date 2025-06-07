@@ -1,35 +1,38 @@
 'use client';
 
-import { useTelegram } from './TelegramProvider';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTelegram } from '@/components/TelegramProvider';
+import LoadingScreen from '@/components/LoadingScreen';
 
-export default function AuthStatus() {
-  const { webApp, ready, error } = useTelegram();
+export function AuthStatus({ children }: { children: React.ReactNode }) {
+  const { ready, user } = useTelegram();
+  const router = useRouter();
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-black text-white">
-        <div className="text-center max-w-md mx-auto px-4">
-          <h1 className="text-2xl font-bold text-red-500 mb-4">Ошибка</h1>
-          <p className="text-lg mb-4">{error.message}</p>
-          <div className="text-sm text-gray-400 mt-4">
-            <p>WebApp доступен: {webApp ? 'Да' : 'Нет'}</p>
-            <p>Готов к работе: {ready ? 'Да' : 'Нет'}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (ready && !user) {
+      router.push('/');
+    }
+  }, [ready, user, router]);
 
   if (!ready) {
+    return <LoadingScreen />;
+  }
+
+  if (!user) {
     return (
-      <div className="min-h-screen bg-black text-white">
-        <div className="text-center max-w-md mx-auto px-4">
-          <h1 className="text-2xl font-bold mb-4">Загрузка...</h1>
-          <p className="text-lg">Пожалуйста, подождите</p>
+      <div className="min-h-screen text-white">
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="text-2xl font-bold mb-4">Доступ запрещен</h1>
+          <p>Пожалуйста, откройте приложение через Telegram.</p>
         </div>
       </div>
     );
   }
 
-  return null;
+  return (
+    <div className="min-h-screen text-white">
+      {children}
+    </div>
+  );
 } 

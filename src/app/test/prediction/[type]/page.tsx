@@ -59,7 +59,7 @@ export default function PredictionPage() {
   
   if (!spread) {
     return (
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen text-white">
         <Header />
         <main className="container mx-auto px-4 py-8">
           <h1 className="text-2xl font-medium text-center mb-8">
@@ -71,7 +71,7 @@ export default function PredictionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen text-white">
       <Header />
       
       <main className="container mx-auto px-4 py-8">
