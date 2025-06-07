@@ -35,13 +35,6 @@ const createMockWebApp = (initData: string): WebApp => {
   const query_id = urlParams.get('query_id');
   const hash = urlParams.get('hash');
 
-  console.log('Creating mock WebApp with:', {
-    user,
-    auth_date,
-    query_id,
-    hash
-  });
-
   return {
     initData,
     initDataUnsafe: {
@@ -101,37 +94,51 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Initialize WebApp
   useEffect(() => {
-    setMounted(true);
-    const initWebApp = async () => {
+    const initWebApp = () => {
       try {
-        if (typeof window !== 'undefined') {
-          if (window.Telegram?.WebApp) {
-            setWebApp(window.Telegram.WebApp);
-            window.Telegram.WebApp.ready();
-            setReady(true);
-          } else {
-            const urlParams = new URLSearchParams(window.location.search);
-            const initData = urlParams.get('initData');
-            
-            if (initData) {
-              const mockWebApp = createMockWebApp(initData);
-              setWebApp(mockWebApp);
-              setReady(true);
-            } else {
-              setError('WebApp not available and no test initData provided');
-            }
-          }
+        // Check if we're in development mode and have initData in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const initData = urlParams.get('initData');
+        
+        if (window.Telegram?.WebApp) {
+          console.log('Found Telegram WebApp:', window.Telegram.WebApp);
+          setWebApp(window.Telegram.WebApp);
+          window.Telegram.WebApp.ready();
+          setReady(true);
+        } else if (initData) {
+          console.log('Using mock WebApp with initData:', initData);
+          const mockWebApp = createMockWebApp(initData);
+          setWebApp(mockWebApp);
+          setReady(true);
+        } else if (process.env.NODE_ENV === 'development') {
+          console.log('Development mode: creating mock WebApp');
+          const mockInitData = `user={"id":12345,"first_name":"Test","username":"test_user"}&auth_date=${Math.floor(Date.now() / 1000)}&hash=test_hash`;
+          const mockWebApp = createMockWebApp(mockInitData);
+          setWebApp(mockWebApp);
+          setReady(true);
+        } else {
+          setError('WebApp не доступен. Пожалуйста, откройте приложение через Telegram.');
         }
       } catch (err) {
         console.error('Failed to initialize WebApp:', err);
-        setError(err instanceof Error ? err.message : 'Failed to initialize WebApp');
+        setError(err instanceof Error ? err.message : 'Ошибка инициализации WebApp');
       }
     };
 
-    initWebApp();
+    // Wait for the script to load
+    if (typeof window !== 'undefined') {
+      if (document.readyState === 'complete') {
+        initWebApp();
+      } else {
+        window.addEventListener('load', initWebApp);
+        return () => window.removeEventListener('load', initWebApp);
+      }
+    }
   }, []);
 
+  // Handle authentication
   useEffect(() => {
     const authenticate = async () => {
       if (!webApp?.initData) return;
@@ -146,13 +153,14 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (!response.ok) {
-          throw new Error(`Authentication failed: ${response.statusText}`);
+          const data = await response.json();
+          throw new Error(data.error || `Ошибка аутентификации: ${response.statusText}`);
         }
 
         setIsAuthenticated(true);
       } catch (err) {
         console.error('Authentication error:', err);
-        setError(err instanceof Error ? err.message : 'Authentication failed');
+        setError(err instanceof Error ? err.message : 'Ошибка аутентификации');
         setIsAuthenticated(false);
       }
     };
@@ -161,6 +169,11 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       authenticate();
     }
   }, [ready, webApp]);
+
+  // Set mounted state
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const value = {
     webApp,
@@ -175,11 +188,28 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <h1 className="text-2xl font-bold text-purple-500 mb-4">Таро Бот</h1>
-          <p className="text-lg mb-4">Инициализация приложения</p>
+          <p className="text-lg mb-4">Загрузка приложения...</p>
           <div className="text-sm text-gray-400 mt-4">
             <p>WebApp доступен: Нет</p>
             <p>Готов к работе: Нет</p>
             <p>Аутентифицирован: Нет</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <h1 className="text-2xl font-bold text-red-500 mb-4">Ошибка</h1>
+          <p className="text-lg mb-4">{error}</p>
+          <div className="text-sm text-gray-400 mt-4">
+            <p>WebApp доступен: {webApp ? 'Да' : 'Нет'}</p>
+            <p>Готов к работе: {ready ? 'Да' : 'Нет'}</p>
+            <p>Аутентифицирован: {isAuthenticated ? 'Да' : 'Нет'}</p>
           </div>
         </div>
       </div>
