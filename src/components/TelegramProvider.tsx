@@ -76,7 +76,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     initializeWebApp();
-  }, [initializeWebApp]);
+  }, [initializeWebApp, authenticate]);
 
   const value = {
     webApp,

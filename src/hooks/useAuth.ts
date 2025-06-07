@@ -7,6 +7,14 @@ interface AuthState {
   error: string | null;
 }
 
+interface SignInResponse {
+  success: boolean;
+}
+
+interface CheckResponse {
+  isValid: boolean;
+}
+
 export const useAuth = () => {
   const [state, setState] = useState<AuthState>({
     isAuthenticated: false,
@@ -18,9 +26,13 @@ export const useAuth = () => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       
-      await axios.post('/api/auth/signin', { initData }, {
+      const { data } = await axios.post<SignInResponse>('/api/auth/signin', { initData }, {
         withCredentials: true // Important for handling cookies
       });
+
+      if (!data.success) {
+        throw new Error('Authentication failed');
+      }
 
       setState({
         isAuthenticated: true,
@@ -41,10 +53,14 @@ export const useAuth = () => {
 
   const checkAuthStatus = async () => {
     try {
-      await axios.get('/api/auth/check', {
+      const { data } = await axios.get<CheckResponse>('/api/auth/check', {
         withCredentials: true
       });
       
+      if (!data.isValid) {
+        throw new Error('Session expired');
+      }
+
       setState({
         isAuthenticated: true,
         isLoading: false,
