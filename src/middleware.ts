@@ -8,6 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret';
 const PUBLIC_PATHS = [
   '/api/auth/signin',
   '/api/auth/check',
+  '/debug',
   '/_next',
   '/favicon.ico'
 ];
@@ -54,7 +55,7 @@ export async function middleware(request: NextRequest) {
     
     // Token is valid, continue
     return NextResponse.next();
-  } catch (error) {
+  } catch {
     // Access token is invalid, try refresh token
     console.log('Middleware: Access token invalid, trying refresh token');
     if (!refreshToken) {
@@ -92,7 +93,7 @@ export async function middleware(request: NextRequest) {
       });
 
       return response;
-    } catch (error) {
+    } catch {
       console.log('Middleware: Refresh token invalid');
       return NextResponse.json(
         { error: 'Invalid refresh token' },
