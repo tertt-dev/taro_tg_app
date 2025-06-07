@@ -147,14 +147,27 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        console.log('Authenticating with initData:', webApp.initData);
+        // Get initData from URL if available
+        const url = new URL(window.location.href);
+        const hash = url.hash;
+        let initData = webApp.initData;
+
+        if (hash && hash.includes('tgWebAppData=')) {
+          const hashParams = new URLSearchParams(hash.slice(1));
+          const tgWebAppData = hashParams.get('tgWebAppData');
+          if (tgWebAppData) {
+            initData = tgWebAppData;
+          }
+        }
+
+        console.log('Authenticating with initData:', initData);
         
         const response = await fetch('/api/auth', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ initData: webApp.initData }),
+          body: JSON.stringify({ initData }),
         });
 
         const data = await response.json();

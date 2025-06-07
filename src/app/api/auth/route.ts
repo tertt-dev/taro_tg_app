@@ -34,6 +34,7 @@ function checkSignature(initData: string, botToken: string): boolean {
   try {
     const urlParams = new URLSearchParams(initData);
     const hash = urlParams.get('hash');
+    
     if (!hash) {
       console.log('No hash found in initData');
       return false;
@@ -55,9 +56,9 @@ function checkSignature(initData: string, botToken: string): boolean {
       .digest();
 
     // Calculate data signature
-    const signature = createHmac('sha256', secretKey)
-      .update(dataCheckString)
-      .digest('hex');
+    const hmac = createHmac('sha256', secretKey);
+    hmac.update(dataCheckString);
+    const signature = hmac.digest('hex');
 
     console.log('Validation details:', {
       dataCheckString,
@@ -80,6 +81,8 @@ interface TelegramUser {
   username?: string;
   language_code?: string;
   photo_url?: string;
+  is_premium?: boolean;
+  allows_write_to_pm?: boolean;
 }
 
 export async function POST(request: Request) {
@@ -93,7 +96,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const initData = body.initData as string;
+    let initData = body.initData as string;
 
     if (!initData) {
       console.log('No initData provided');
@@ -103,7 +106,17 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log('Received initData:', initData);
+    // Extract initData from URL hash if present
+    if (initData.includes('#')) {
+      const hashPart = initData.split('#')[1];
+      const hashParams = new URLSearchParams(hashPart);
+      const tgWebAppData = hashParams.get('tgWebAppData');
+      if (tgWebAppData) {
+        initData = tgWebAppData;
+      }
+    }
+
+    console.log('Processing initData:', initData);
 
     // Verify signature
     const isValid = checkSignature(initData, BOT_TOKEN!);
