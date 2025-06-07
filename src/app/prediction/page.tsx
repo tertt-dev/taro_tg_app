@@ -89,12 +89,15 @@ export default function PredictionPage() {
                       name={card.name}
                       image={card.image}
                       description={card.description || ''}
+                      cardNumber={card.cardNumber}
                       isRevealed={revealedCards.includes(index)}
                       onReveal={() => {
                         if (!revealedCards.includes(index)) {
                           setRevealedCards(prev => [...prev, index]);
                         }
                       }}
+                      showDescription={true}
+                      size="md"
                     />
                   ))}
                 </div>

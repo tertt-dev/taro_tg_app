@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { Inter } from "next/font/google";
 import Head from 'next/head';
 import { TelegramProvider, useTelegramWebApp } from "@/components/TelegramProvider";
-import type { TelegramWebApp } from '@/types/telegram';
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
@@ -69,19 +68,25 @@ const LayoutContent = ({ children }: { children: React.ReactNode }) => {
   const [viewportHeight, setViewportHeight] = useState('100vh');
 
   useEffect(() => {
-    if (webApp) {
-      const app = webApp as Required<Pick<TelegramWebApp, 'viewportHeight' | 'onEvent' | 'offEvent'>>;
-      const updateHeight = () => {
-        setViewportHeight(`${app.viewportHeight}px`);
-      };
+    if (!webApp) return;
 
-      updateHeight();
-      app.onEvent('viewportChanged', updateHeight);
+    const updateHeight = () => {
+      if (webApp.viewportHeight) {
+        setViewportHeight(`${webApp.viewportHeight}px`);
+      }
+    };
 
-      return () => {
-        app.offEvent('viewportChanged', updateHeight);
-      };
+    updateHeight();
+
+    if (webApp.onEvent) {
+      webApp.onEvent('viewportChanged', updateHeight);
     }
+
+    return () => {
+      if (webApp.offEvent) {
+        webApp.offEvent('viewportChanged', updateHeight);
+      }
+    };
   }, [webApp]);
 
   if (error) {

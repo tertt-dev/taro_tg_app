@@ -16,6 +16,7 @@ interface WebApp {
       last_name?: string;
       username?: string;
       language_code?: string;
+      photo_url?: string;
     };
     auth_date?: string;
     hash?: string;
@@ -36,6 +37,11 @@ interface WebApp {
     offClick: (callback: () => void) => void;
     isVisible: boolean;
   };
+  viewportHeight?: number;
+  viewportStableHeight?: number;
+  onEvent?: (eventType: string, eventHandler: () => void) => void;
+  offEvent?: (eventType: string, eventHandler: () => void) => void;
+  openTelegramLink?: (url: string) => void;
 }
 
 export type { WebApp }; 

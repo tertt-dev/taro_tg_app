@@ -8,6 +8,7 @@ export interface SpreadType {
   icon: React.ReactNode;
   description: string;
   cardCount: number;
+  positions: string[];
 }
 
 export const spreads: SpreadType[] = [
@@ -17,6 +18,7 @@ export const spreads: SpreadType[] = [
     icon: <Heart className="w-6 h-6" />,
     description: 'Чувства, препятствия, перспектива отношений',
     cardCount: 3,
+    positions: ['Чувства', 'Препятствия', 'Перспектива']
   },
   {
     id: 'work',
@@ -24,6 +26,7 @@ export const spreads: SpreadType[] = [
     icon: <Briefcase className="w-6 h-6" />,
     description: 'Текущее положение, вызовы, совет',
     cardCount: 3,
+    positions: ['Текущее положение', 'Вызовы', 'Совет']
   },
   {
     id: 'daily',
@@ -31,6 +34,7 @@ export const spreads: SpreadType[] = [
     icon: <Sun className="w-6 h-6" />,
     description: 'Энергия дня, краткое предсказание',
     cardCount: 1,
+    positions: ['Энергия дня']
   },
   {
     id: 'random',
@@ -38,6 +42,7 @@ export const spreads: SpreadType[] = [
     icon: <Dices className="w-6 h-6" />,
     description: 'Случайный расклад с необычной перспективой',
     cardCount: 0,
+    positions: []
   },
 ];
 

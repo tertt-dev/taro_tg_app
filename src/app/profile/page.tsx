@@ -22,6 +22,15 @@ interface Prediction {
   currentMeaning?: string;
 }
 
+interface UserProfile {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  language_code?: string;
+}
+
 const themes: Theme[] = [
   { id: 'light', name: 'Светлая', icon: Sun },
   { id: 'dark', name: 'Тёмная', icon: Moon },
@@ -32,6 +41,7 @@ export default function ProfilePage() {
   const [theme, setTheme] = useState<Theme['id']>('dark');
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [userData, setUserData] = useState<UserProfile | null>(null);
 
   // Handle BackButton in Telegram WebApp
   useEffect(() => {
@@ -85,6 +95,16 @@ export default function ProfilePage() {
         username: userData.username,
         photo_url: userData.photo_url,
       });
+
+      // Set user data in state
+      setUserData({
+        id: userData.id,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        username: userData.username,
+        photo_url: userData.photo_url,
+        language_code: userData.language_code
+      });
     } else {
       console.warn('Profile page: no user data available');
     }
@@ -96,7 +116,6 @@ export default function ProfilePage() {
     // Here you can implement actual theme change logic
   };
 
-  const user = webApp?.initDataUnsafe?.user;
   const recentPredictions = predictions.slice(0, 5); // Show only 5 most recent predictions
 
   if (!ready) {
@@ -137,22 +156,12 @@ export default function ProfilePage() {
     );
   }
 
-  if (!webApp?.initDataUnsafe?.user) {
+  if (!userData) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <p className="text-lg text-yellow-500 mb-4">Данные пользователя недоступны</p>
-          <p className="text-muted-foreground mb-4">
-            Не удалось получить информацию о пользователе из Telegram
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Пожалуйста, убедитесь что вы:
-          </p>
-          <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-            <li>• Открыли приложение через Telegram</li>
-            <li>• Используете актуальную версию Telegram</li>
-            <li>• Разрешили доступ к данным профиля</li>
-          </ul>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Загрузка...</h1>
+          <p className="text-gray-400">Получаем данные профиля</p>
         </div>
       </div>
     );
@@ -173,119 +182,100 @@ export default function ProfilePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {user && (
+        {userData && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            {/* User Info Section */}
-            <div className="bg-zinc-900/50 rounded-xl p-6 backdrop-blur-sm">
-              <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4">
+              {userData.photo_url && (
                 <div className="w-24 h-24 rounded-full overflow-hidden">
                   <Image
-                    src={user.photo_url || '/placeholder-avatar.svg'}
+                    src={userData.photo_url}
                     alt="Profile"
                     width={96}
                     height={96}
-                    className="w-full h-full object-cover"
-                    unoptimized
+                    className="object-cover"
                   />
                 </div>
-                <div className="flex-1">
-                  <h2 className="text-xl font-semibold">
-                    {user.first_name}{' '}
-                    {user.last_name}
-                  </h2>
-                  {user.username && (
-                    <p className="text-muted-foreground">
-                      @{user.username}
-                    </p>
-                  )}
-                  <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                    <History className="w-4 h-4" />
-                    <span>{predictions.length} предсказаний</span>
-                  </div>
-                </div>
+              )}
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold">
+                  {userData.first_name} {userData.last_name}
+                </h2>
+                {userData.username && (
+                  <p className="text-muted-foreground">
+                    @{userData.username}
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* Recent Predictions Section */}
-            {recentPredictions.length > 0 && (
-              <div className="bg-zinc-900/50 rounded-xl p-6 backdrop-blur-sm">
-                <h3 className="text-lg font-medium mb-4">Последние предсказания</h3>
-                <div className="space-y-4">
-                  {recentPredictions.map((prediction, index) => (
-                    <div
-                      key={index}
-                      className="p-4 bg-black/20 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        <Image
-                          src={prediction.image}
-                          alt={prediction.name}
-                          width={48}
-                          height={48}
-                          className="rounded-lg"
-                        />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white/5 rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <History className="w-5 h-5" />
+                  <h3 className="text-lg font-semibold">История предсказаний</h3>
+                </div>
+                {recentPredictions.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentPredictions.map((prediction, index) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="w-12 h-16 rounded-lg overflow-hidden">
+                          <Image
+                            src={prediction.image}
+                            alt={prediction.name}
+                            width={48}
+                            height={64}
+                            className="object-cover"
+                          />
+                        </div>
                         <div>
-                          <h4 className="font-medium">{prediction.name}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(prediction.date).toLocaleDateString('ru-RU')}
+                          <p className="font-medium">{prediction.name}</p>
+                          <p className="text-sm text-muted-foreground">{prediction.date}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {prediction.currentMeaning || prediction.text}
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {prediction.text}
-                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">
+                    У вас пока нет предсказаний. Сделайте первое предсказание, чтобы увидеть его здесь.
+                  </p>
+                )}
+              </div>
+
+              <div className="bg-white/5 rounded-xl p-6">
+                <h3 className="text-lg font-semibold mb-4">Настройки</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Тема оформления
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {themes.map((t) => {
+                        const Icon = t.icon;
+                        return (
+                          <button
+                            key={t.id}
+                            onClick={() => handleThemeChange(t.id)}
+                            className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
+                              theme === t.id
+                                ? 'bg-primary text-primary-foreground'
+                                : 'hover:bg-white/10'
+                            }`}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span>{t.name}</span>
+                          </button>
+                        );
+                      })}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
-            )}
-
-            {/* Theme Section */}
-            <div className="bg-zinc-900/50 rounded-xl p-6 backdrop-blur-sm">
-              <h3 className="text-lg font-medium mb-3">Тема оформления</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {themes.map((t) => {
-                  const Icon = t.icon;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => handleThemeChange(t.id)}
-                      className={`
-                        flex items-center gap-3 p-4 rounded-lg transition-all
-                        ${theme === t.id
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-black/20 hover:bg-black/30'
-                        }
-                      `}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span>{t.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Settings Section */}
-            <div className="bg-zinc-900/50 rounded-xl p-6 backdrop-blur-sm">
-              <h3 className="text-lg font-medium mb-3">Настройки</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => webApp?.openTelegramLink?.('https://t.me/share/url?url=https://t.me/your_bot')}
-                  className="w-full text-left px-4 py-3 rounded-lg bg-black/20 hover:bg-black/30 transition-colors"
-                >
-                  Поделиться ботом
-                </button>
-                <button
-                  onClick={() => webApp?.openTelegramLink?.('https://t.me/your_support_chat')}
-                  className="w-full text-left px-4 py-3 rounded-lg bg-black/20 hover:bg-black/30 transition-colors"
-                >
-                  Поддержка
-                </button>
               </div>
             </div>
           </motion.div>

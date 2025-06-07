@@ -9,6 +9,7 @@ export interface TarotCardProps extends Card {
   onReveal?: () => void;
   showDescription?: boolean;
   size?: 'sm' | 'md' | 'lg';
+  position?: string;
 }
 
 export function TarotCard({
@@ -16,6 +17,7 @@ export function TarotCard({
   image,
   description,
   cardNumber,
+  position,
   isRevealed = false,
   onReveal,
   showDescription = false,
@@ -59,6 +61,9 @@ export function TarotCard({
       {showDescription && isRevealed && (
         <div className="absolute inset-0 flex items-end">
           <div className="w-full p-4 bg-gradient-to-t from-black/80 to-transparent">
+            {position && (
+              <div className="text-sm text-gray-400 mb-1">{position}</div>
+            )}
             <div className="flex items-center gap-2 mb-1">
               <span className="text-sm text-gray-400">{cardNumber}</span>
               <h3 className="text-lg font-semibold">{name}</h3>

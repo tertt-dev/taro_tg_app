@@ -21,7 +21,7 @@ export const TelegramContext = createContext<TelegramContextType>({
 declare global {
   interface Window {
     Telegram?: {
-      WebApp: WebApp;
+      WebApp?: WebApp;
     };
   }
 }
