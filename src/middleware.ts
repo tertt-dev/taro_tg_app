@@ -6,6 +6,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret';
 
 // Define paths that should skip authentication
 const PUBLIC_PATHS = [
+  '/',              // Root path should be public to start auth flow
   '/api/auth/signin',
   '/api/auth/check',
   '/debug',
@@ -18,15 +19,18 @@ export async function middleware(request: NextRequest) {
   console.log('Middleware: Processing request for', path);
 
   // Check if the path should skip authentication
-  const isPublicPath = PUBLIC_PATHS.some(publicPath => path.startsWith(publicPath));
+  const isPublicPath = PUBLIC_PATHS.some(publicPath => 
+    path === publicPath || path.startsWith(`${publicPath}/`)
+  );
+  
   if (isPublicPath) {
     console.log('Middleware: Skipping auth for public path:', path);
     return NextResponse.next();
   }
 
-  // Skip static files
-  if (path.includes('.')) {
-    console.log('Middleware: Skipping auth for static file:', path);
+  // Skip static files and well-known paths
+  if (path.includes('.') || path.startsWith('/.well-known')) {
+    console.log('Middleware: Skipping auth for static/well-known file:', path);
     return NextResponse.next();
   }
 
@@ -41,10 +45,8 @@ export async function middleware(request: NextRequest) {
 
   if (!accessToken) {
     console.log('Middleware: No access token provided for path:', path);
-    return NextResponse.json(
-      { error: 'No access token provided' },
-      { status: 401 }
-    );
+    // Instead of returning error JSON, redirect to home page
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   try {
@@ -60,10 +62,8 @@ export async function middleware(request: NextRequest) {
     console.log('Middleware: Access token invalid, trying refresh token');
     if (!refreshToken) {
       console.log('Middleware: No refresh token available');
-      return NextResponse.json(
-        { error: 'No refresh token provided' },
-        { status: 401 }
-      );
+      // Instead of returning error JSON, redirect to home page
+      return NextResponse.redirect(new URL('/', request.url));
     }
 
     try {
@@ -95,10 +95,8 @@ export async function middleware(request: NextRequest) {
       return response;
     } catch {
       console.log('Middleware: Refresh token invalid');
-      return NextResponse.json(
-        { error: 'Invalid refresh token' },
-        { status: 401 }
-      );
+      // Instead of returning error JSON, redirect to home page
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 } 

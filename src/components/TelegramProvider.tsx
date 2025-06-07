@@ -1,28 +1,36 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import type { TelegramWebApp } from '@/types/telegram';
 import { useAuth } from '@/hooks/useAuth';
+import type { WebApp } from '@/types/telegram-webapp';
 
 interface TelegramContextType {
-  webApp: TelegramWebApp | null;
+  webApp: WebApp | null;
   ready: boolean;
   error: string | null;
   isAuthenticated: boolean;
 }
 
-const TelegramContext = createContext<TelegramContextType>({
+export const TelegramContext = createContext<TelegramContextType>({
   webApp: null,
   ready: false,
   error: null,
-  isAuthenticated: false
+  isAuthenticated: false,
 });
 
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp: WebApp;
+    };
+  }
+}
+
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
-  const [webApp, setWebApp] = useState<TelegramWebApp | null>(null);
+  const [webApp, setWebApp] = useState<WebApp | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated, authenticate, error: authError } = useAuth();
+  const { isAuthenticated, authenticate } = useAuth();
 
   const initializeWebApp = useCallback(async () => {
     console.log('TelegramProvider: Initializing...');
@@ -51,34 +59,19 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         const app = window.Telegram?.WebApp;
         console.log('WebApp object:', app);
         
-        if (app) {
-          console.log('WebApp found, initializing...');
-          const webAppInstance = app as unknown as TelegramWebApp;
-          setWebApp(webAppInstance);
+        if (app && app.initData) {
+          console.log('WebApp found with initData, initializing...');
+          setWebApp(app);
           
-          if (typeof webAppInstance.ready === 'function') {
-            console.log('Calling WebApp.ready()');
-            webAppInstance.ready();
-          }
+          app.ready?.();
+          console.log('Called WebApp.ready()');
           
-          if (typeof webAppInstance.expand === 'function') {
-            console.log('Expanding WebApp view');
-            webAppInstance.expand();
-          }
-          
-          // Get initData from WebApp
-          const initData = webAppInstance.initData;
-          console.log('InitData from WebApp:', initData ? 'present' : 'missing');
-          
-          if (!initData) {
-            console.error('No initData available from WebApp');
-            setError('No authentication data available');
-            return;
-          }
+          app.expand?.();
+          console.log('Called WebApp.expand()');
           
           // Authenticate using initData
           console.log('Attempting authentication with WebApp initData...');
-          const success = await authenticate(initData);
+          const success = await authenticate(app.initData);
           console.log('Authentication result:', success);
           
           if (success) {
@@ -90,7 +83,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
             setError('Authentication failed');
           }
         } else {
-          const errorMsg = 'Telegram WebApp is not available';
+          const errorMsg = app ? 'No initData available from WebApp' : 'Telegram WebApp is not available';
           console.warn(errorMsg);
           setError(errorMsg);
           
@@ -113,7 +106,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const value = {
     webApp,
     ready,
-    error: error || authError,
+    error: error || null,
     isAuthenticated
   };
 

@@ -1,18 +1,15 @@
-export interface TelegramWebApp {
-  ready: () => void;
-  expand: () => void;
-  close: () => void;
-  MainButton: {
-    text: string;
-    show: () => void;
-    hide: () => void;
-    onClick: (callback: () => void) => void;
-  };
-  viewportHeight: number;
-  viewportStableHeight: number;
-  onEvent: (eventType: string, callback: () => void) => void;
-  offEvent: (eventType: string, callback: () => void) => void;
-  initDataUnsafe: {
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: WebApp;
+    };
+  }
+}
+
+interface WebApp {
+  initData: string;
+  initDataUnsafe?: {
+    query_id?: string;
     user?: {
       id: number;
       first_name: string;
@@ -20,16 +17,18 @@ export interface TelegramWebApp {
       username?: string;
       language_code?: string;
     };
-    query_id?: string;
+    auth_date?: string;
+    hash?: string;
+  };
+  ready?: () => void;
+  expand?: () => void;
+  close?: () => void;
+  MainButton?: {
+    text: string;
+    show: () => void;
+    hide: () => void;
+    onClick: (callback: () => void) => void;
   };
 }
 
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: TelegramWebApp;
-    };
-  }
-}
-
-export {}; 
+export type { WebApp }; 

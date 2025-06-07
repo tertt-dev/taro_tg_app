@@ -1,14 +1,13 @@
-interface TelegramWebApp {
-  ready?(): void;
-  expand?(): void;
-  close?(): void;
-  initData?: string;
+export interface TelegramWebApp {
+  initData: string;
+  ready?: () => void;
+  expand?: () => void;
+  close?: () => void;
   MainButton?: {
-    show(): void;
-    hide(): void;
-    setText(text: string): void;
-    onClick(callback: () => void): void;
-    offClick(callback: () => void): void;
+    text: string;
+    show: () => void;
+    hide: () => void;
+    onClick: (callback: () => void) => void;
   };
   BackButton?: {
     show(): void;
@@ -59,7 +58,9 @@ interface TelegramType {
 
 declare global {
   interface Window {
-    Telegram?: TelegramType;
+    Telegram?: {
+      WebApp?: TelegramWebApp;
+    };
   }
 }
 
