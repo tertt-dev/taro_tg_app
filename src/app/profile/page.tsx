@@ -11,36 +11,63 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen text-white font-cormorant">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-purple-500 mb-6">Профиль</h1>
-        <div className="bg-gray-800 rounded-lg p-6">
-          <div className="flex items-start space-x-6">
-            <div className="flex-grow">
-              <h2 className="text-2xl font-semibold mb-2">{user.first_name} {user.last_name}</h2>
-              {user.username && (
-                <p className="text-gray-400 mb-4">@{user.username}</p>
-              )}
-              {user.language_code && (
-                <p className="text-sm text-gray-500">Язык: {user.language_code.toUpperCase()}</p>
-              )}
+        <h2 className="text-2xl font-medium text-center mb-8">
+          Профиль
+        </h2>
+
+        <div className="max-w-xl mx-auto">
+          <div className="relative flex flex-col p-6 rounded-xl bg-black/80 backdrop-blur-[30px] border border-white/10 hover:bg-black/90 transition-all duration-200 group overflow-hidden z-20">
+            {/* Background Pattern */}
+            <div className="absolute inset-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
             </div>
-          </div>
-          <div className="mt-8 pt-6 border-t border-gray-700">
-            <h2 className="text-2xl font-bold text-purple-400 mb-4">Статистика</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-900 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-purple-300">Выполнено раскладов</h3>
-                <p className="text-3xl font-bold">0</p>
+            <div className="relative space-y-4 z-10">
+              <div>
+                <h3 className="text-lg text-muted-foreground font-cormorant">Имя</h3>
+                <p className="text-xl font-cormorant">{user.first_name} {user.last_name}</p>
               </div>
-              <div className="bg-gray-900 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-purple-300">Любимая колода</h3>
-                <p className="text-xl">Не выбрана</p>
+              
+              <div>
+                <h3 className="text-lg text-muted-foreground font-cormorant">ID пользователя</h3>
+                <p className="text-xl font-cormorant">{user.id}</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg text-muted-foreground font-cormorant">Язык</h3>
+                <p className="text-xl font-cormorant">{user.language_code}</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg text-muted-foreground font-cormorant">Статистика</h3>
+                <div className="grid grid-cols-2 gap-4 mt-2">
+                  <div className="relative flex flex-col p-4 rounded-xl bg-black/80 backdrop-blur-[30px] border border-white/10 hover:bg-black/90 transition-all duration-200 group overflow-hidden z-20">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
+                    </div>
+                    <div className="relative z-10">
+                      <p className="text-2xl font-medium font-cormorant">12</p>
+                      <p className="text-sm text-muted-foreground font-cormorant">Всего раскладов</p>
+                    </div>
+                  </div>
+                  <div className="relative flex flex-col p-4 rounded-xl bg-black/80 backdrop-blur-[30px] border border-white/10 hover:bg-black/90 transition-all duration-200 group overflow-hidden z-20">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
+                    </div>
+                    <div className="relative z-10">
+                      <p className="text-2xl font-medium font-cormorant">3</p>
+                      <p className="text-sm text-muted-foreground font-cormorant">За сегодня</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 } 

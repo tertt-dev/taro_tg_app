@@ -52,7 +52,7 @@ export default function PredictionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen text-white font-cormorant">
       <Header onHistoryClick={toggleHistory} />
       
       <main className="container mx-auto px-4 py-8">
@@ -60,15 +60,17 @@ export default function PredictionPage() {
           <motion.button
             onClick={handleNewPrediction}
             disabled={isGenerating}
-            className={`
-              px-6 py-3 rounded-lg bg-purple-600 text-white font-medium
-              transition-colors duration-200
-              ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'}
-            `}
+            className="relative flex flex-col p-4 rounded-xl bg-black/80 backdrop-blur-[30px] border border-white/10 hover:bg-black/90 transition-all duration-200 group overflow-hidden z-20"
             whileHover={{ scale: isGenerating ? 1 : 1.05 }}
             whileTap={{ scale: isGenerating ? 1 : 0.95 }}
           >
-            {isGenerating ? 'Гадаем...' : 'Получить предсказание'}
+            {/* Background Pattern */}
+            <div className="absolute inset-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
+            </div>
+            <div className="relative z-10">
+              {isGenerating ? 'Гадаем...' : 'Получить предсказание'}
+            </div>
           </motion.button>
 
           {predictions.length > 0 && (
@@ -77,30 +79,36 @@ export default function PredictionPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="bg-zinc-900 rounded-lg p-6"
+                className="relative flex flex-col p-6 rounded-xl bg-black/80 backdrop-blur-[30px] border border-white/10 hover:bg-black/90 transition-all duration-200 group overflow-hidden z-20"
               >
-                <h2 className="text-xl font-semibold mb-4">
-                  {predictions[0].date}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  {predictions[0].cards.map((card, index) => (
-                    <TarotCard
-                      key={index}
-                      name={card.name}
-                      image={card.image}
-                      description={card.description || ''}
-                      isRevealed={revealedCards.includes(index)}
-                      onReveal={() => {
-                        if (!revealedCards.includes(index)) {
-                          setRevealedCards(prev => [...prev, index]);
-                        }
-                      }}
-                    />
-                  ))}
+                {/* Background Pattern */}
+                <div className="absolute inset-0">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
                 </div>
-                <p className="text-gray-300 leading-relaxed">
-                  {predictions[0].text}
-                </p>
+                <div className="relative z-10">
+                  <h2 className="text-xl font-medium mb-4 font-cormorant">
+                    {predictions[0].date}
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    {predictions[0].cards.map((card, index) => (
+                      <TarotCard
+                        key={index}
+                        name={card.name}
+                        image={card.image}
+                        description={card.description || ''}
+                        isRevealed={revealedCards.includes(index)}
+                        onReveal={() => {
+                          if (!revealedCards.includes(index)) {
+                            setRevealedCards(prev => [...prev, index]);
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed font-cormorant">
+                    {predictions[0].text}
+                  </p>
+                </div>
               </motion.div>
             </div>
           )}

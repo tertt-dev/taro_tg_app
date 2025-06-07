@@ -37,22 +37,28 @@ export function HistoryPanel({ isOpen, onClose, predictions }: HistoryPanelProps
                 key={prediction.date}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-zinc-900/50 rounded-lg p-4"
+            className="relative flex flex-col p-4 rounded-xl bg-black/80 backdrop-blur-[30px] border border-white/10 hover:bg-black/90 transition-all duration-200 group overflow-hidden z-20"
           >
-                <div className="text-sm text-muted-foreground mb-2">
-                  {prediction.date}
+                {/* Background Pattern */}
+                <div className="absolute inset-0">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
                 </div>
-                <div className="flex gap-2 mb-3">
+
+                <div className="flex justify-between items-start mb-2 relative z-10">
+                  <h3 className="text-xl font-medium">Любовный расклад</h3>
+                  <span className="text-sm text-muted-foreground">{prediction.date}</span>
+                </div>
+                <div className="flex gap-2 mb-3 relative z-10">
                 {prediction.cards.map((card, index) => (
                     <div
                       key={`${prediction.date}-${index}`}
-                      className="w-12 h-12 rounded-lg bg-black/40 flex items-center justify-center text-xs"
+                      className="w-12 h-12 rounded-lg bg-black/40 flex items-center justify-center text-xs font-cormorant"
                     >
                       {card.name}
                     </div>
                 ))}
               </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground relative z-10 font-cormorant">
                   {prediction.text}
                 </p>
           </motion.div>

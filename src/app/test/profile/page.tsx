@@ -16,48 +16,48 @@ export default function ProfilePage() {
         </h2>
 
         <div className="max-w-xl mx-auto">
-          <div className="relative rounded-xl p-6 overflow-hidden">
+          <div className="relative flex flex-col p-6 rounded-xl bg-black/80 backdrop-blur-[30px] border border-white/10 hover:bg-black/90 transition-all duration-200 group overflow-hidden z-20">
+            {/* Background Pattern */}
             <div className="absolute inset-0">
-              <div className="absolute inset-0 bg-zinc-900"></div>
-              <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
             </div>
-            <div className="relative space-y-4">
+            <div className="relative space-y-4 z-10">
               <div>
-                <h3 className="text-lg text-zinc-400">Имя</h3>
-                <p className="text-xl">{user?.first_name} {user?.last_name}</p>
+                <h3 className="text-lg text-muted-foreground font-cormorant">Имя</h3>
+                <p className="text-xl font-cormorant">{user?.first_name} {user?.last_name}</p>
               </div>
               
               <div>
-                <h3 className="text-lg text-zinc-400">ID пользователя</h3>
-                <p className="text-xl">{user?.id}</p>
+                <h3 className="text-lg text-muted-foreground font-cormorant">ID пользователя</h3>
+                <p className="text-xl font-cormorant">{user?.id}</p>
               </div>
 
               <div>
-                <h3 className="text-lg text-zinc-400">Язык</h3>
-                <p className="text-xl">{user?.language_code}</p>
+                <h3 className="text-lg text-muted-foreground font-cormorant">Язык</h3>
+                <p className="text-xl font-cormorant">{user?.language_code}</p>
               </div>
 
               <div>
-                <h3 className="text-lg text-zinc-400">Статистика</h3>
+                <h3 className="text-lg text-muted-foreground font-cormorant">Статистика</h3>
                 <div className="grid grid-cols-2 gap-4 mt-2">
-                  <div className="relative rounded-lg p-4 overflow-hidden">
+                  <div className="relative flex flex-col p-4 rounded-xl bg-black/80 backdrop-blur-[30px] border border-white/10 hover:bg-black/90 transition-all duration-200 group overflow-hidden z-20">
+                    {/* Background Pattern */}
                     <div className="absolute inset-0">
-                      <div className="absolute inset-0 bg-zinc-900"></div>
-                      <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900"></div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
                     </div>
-                    <div className="relative">
-                      <p className="text-2xl font-medium">12</p>
-                      <p className="text-sm text-zinc-400">Всего раскладов</p>
+                    <div className="relative z-10">
+                      <p className="text-2xl font-medium font-cormorant">12</p>
+                      <p className="text-sm text-muted-foreground font-cormorant">Всего раскладов</p>
                     </div>
                   </div>
-                  <div className="relative rounded-lg p-4 overflow-hidden">
+                  <div className="relative flex flex-col p-4 rounded-xl bg-black/80 backdrop-blur-[30px] border border-white/10 hover:bg-black/90 transition-all duration-200 group overflow-hidden z-20">
+                    {/* Background Pattern */}
                     <div className="absolute inset-0">
-                      <div className="absolute inset-0 bg-zinc-900"></div>
-                      <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900"></div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
                     </div>
-                    <div className="relative">
-                      <p className="text-2xl font-medium">3</p>
-                      <p className="text-sm text-zinc-400">За сегодня</p>
+                    <div className="relative z-10">
+                      <p className="text-2xl font-medium font-cormorant">3</p>
+                      <p className="text-sm text-muted-foreground font-cormorant">За сегодня</p>
                     </div>
                   </div>
                 </div>

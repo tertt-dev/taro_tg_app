@@ -36,17 +36,20 @@ export default function HistoryPage() {
 
         <div className="space-y-4">
           {MOCK_READINGS.map((reading) => (
-            <div key={reading.id} className="relative rounded-xl p-4 overflow-hidden">
+            <div 
+              key={reading.id} 
+              className="relative flex flex-col p-4 rounded-xl bg-black/80 backdrop-blur-[30px] border border-white/10 hover:bg-black/90 transition-all duration-200 group overflow-hidden z-20"
+            >
+              {/* Background Pattern */}
               <div className="absolute inset-0">
-                <div className="absolute inset-0 bg-zinc-900"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
               </div>
-              <div className="relative">
+              <div className="relative z-10">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-xl font-medium">{reading.type}</h3>
-                  <span className="text-sm text-zinc-400">{reading.date}</span>
+                  <h3 className="text-xl font-medium font-cormorant">{reading.type}</h3>
+                  <span className="text-sm text-muted-foreground font-cormorant">{reading.date}</span>
                 </div>
-                <div className="text-zinc-300">
+                <div className="text-muted-foreground font-cormorant">
                   Карты: {reading.cards.join(', ')}
                 </div>
               </div>
