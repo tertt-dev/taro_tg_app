@@ -143,7 +143,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
 export function useTelegramWebApp() {
   const context = useContext(TelegramContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useTelegramWebApp must be used within a TelegramProvider');
   }
   return context;

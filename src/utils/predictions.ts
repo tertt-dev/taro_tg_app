@@ -1,7 +1,7 @@
 export interface Card {
   name: string;
-  description: string;
   image: string;
+  description: string;
   cardNumber: string;
 }
 
@@ -13,64 +13,64 @@ export interface Prediction {
 
 export const TAROT_CARDS: Card[] = [
   {
-    name: 'Шут',
-    description: 'Новые начинания, спонтанность, свобода',
-    image: '/Cards-png/00-TheFool.png',
-    cardNumber: '0'
+    name: "Шут",
+    image: "/cards/fool.jpg",
+    description: "Новые начинания, спонтанность, невинность, приключения",
+    cardNumber: "0"
   },
   {
-    name: 'Маг',
-    description: 'Сила воли, мастерство, проявление',
-    image: '/Cards-png/01-TheMagician.png',
-    cardNumber: 'I'
+    name: "Маг",
+    image: "/cards/magician.jpg",
+    description: "Проявление, сила воли, мастерство, вдохновение",
+    cardNumber: "I"
   },
   {
-    name: 'Верховная Жрица',
-    description: 'Интуиция, тайны, внутренняя мудрость',
-    image: '/Cards-png/02-TheHighPriestess.png',
-    cardNumber: 'II'
+    name: "Верховная Жрица",
+    image: "/cards/high-priestess.jpg",
+    description: "Интуиция, тайные знания, внутренняя мудрость",
+    cardNumber: "II"
   },
   {
-    name: 'Императрица',
-    description: 'Изобилие, творчество, материнство',
-    image: '/Cards-png/03-TheEmpress.png',
-    cardNumber: 'III'
+    name: "Императрица",
+    image: "/cards/empress.jpg",
+    description: "Изобилие, творчество, материнство, природа",
+    cardNumber: "III"
   },
   {
-    name: 'Император',
-    description: 'Власть, структура, стабильность',
-    image: '/Cards-png/04-TheEmperor.png',
-    cardNumber: 'IV'
+    name: "Император",
+    image: "/cards/emperor.jpg",
+    description: "Власть, структура, стабильность, достижения",
+    cardNumber: "IV"
   },
   {
-    name: 'Иерофант',
-    description: 'Духовное руководство, традиции, обучение',
-    image: '/Cards-png/05-TheHierophant.png',
-    cardNumber: 'V'
+    name: "Иерофант",
+    image: "/cards/hierophant.jpg",
+    description: "Традиции, духовность, обучение, наставничество",
+    cardNumber: "V"
   },
   {
-    name: 'Влюбленные',
-    description: 'Любовь, гармония, выбор',
-    image: '/Cards-png/06-TheLovers.png',
-    cardNumber: 'VI'
+    name: "Влюбленные",
+    image: "/cards/lovers.jpg",
+    description: "Любовь, гармония, выбор, отношения",
+    cardNumber: "VI"
   },
   {
-    name: 'Колесница',
-    description: 'Движение вперед, победа, контроль',
-    image: '/Cards-png/07-TheChariot.png',
-    cardNumber: 'VII'
+    name: "Колесница",
+    image: "/cards/chariot.jpg",
+    description: "Движение вперед, победа, сила воли, решительность",
+    cardNumber: "VII"
   },
   {
-    name: 'Сила',
-    description: 'Внутренняя сила, мужество, самоконтроль',
-    image: '/Cards-png/08-Strength.png',
-    cardNumber: 'VIII'
+    name: "Сила",
+    image: "/cards/strength.jpg",
+    description: "Внутренняя сила, храбрость, терпение, сострадание",
+    cardNumber: "VIII"
   },
   {
-    name: 'Отшельник',
-    description: 'Самопознание, поиск истины, уединение',
-    image: '/Cards-png/09-TheHermit.png',
-    cardNumber: 'IX'
+    name: "Отшельник",
+    image: "/cards/hermit.jpg",
+    description: "Самопознание, мудрость, уединение, внутренний поиск",
+    cardNumber: "IX"
   },
   {
     name: 'Колесо Фортуны',

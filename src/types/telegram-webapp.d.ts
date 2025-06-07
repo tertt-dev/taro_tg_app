@@ -29,6 +29,13 @@ interface WebApp {
     hide: () => void;
     onClick: (callback: () => void) => void;
   };
+  BackButton?: {
+    show: () => void;
+    hide: () => void;
+    onClick: (callback: () => void) => void;
+    offClick: (callback: () => void) => void;
+    isVisible: boolean;
+  };
 }
 
 export type { WebApp }; 
