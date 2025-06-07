@@ -152,7 +152,8 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         const hash = url.hash;
         let initData = webApp.initData;
 
-        if (hash && hash.includes('tgWebAppData=')) {
+        // If we're in development and there's no initData, use mock data
+        if (process.env.NODE_ENV === 'development' && !initData && hash) {
           const hashParams = new URLSearchParams(hash.slice(1));
           const tgWebAppData = hashParams.get('tgWebAppData');
           if (tgWebAppData) {

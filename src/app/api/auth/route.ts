@@ -30,53 +30,52 @@ function validateEnvironment() {
   return true;
 }
 
-function checkSignature(initData: string, botToken: string): boolean {
+function checkTelegramSignature(initData: string, botToken: string): boolean {
   try {
     console.log('Checking signature for initData:', initData);
-    console.log('Using bot token:', botToken);
-
+    
     const urlParams = new URLSearchParams(initData);
     const hash = urlParams.get('hash');
-    
     if (!hash) {
       console.log('No hash found in initData');
       return false;
     }
-
-    console.log('Found hash:', hash);
-
-    // Remove hash from data before checking signature
+    
+    // Data-check-string is a concatenation of all received fields, sorted in alphabetical order, 
+    // in the format key=<value> with a line feed character ('\n') used as separator
+    // (e.g., 'auth_date=<auth_date>\nquery_id=<query_id>\nuser=<user>')
+    
+    // Remove hash from the check
     urlParams.delete('hash');
-
-    // Sort parameters alphabetically
-    const dataCheckArr = Array.from(urlParams.entries())
+    
+    // Create the data check string
+    const dataCheckString = Array.from(urlParams.entries())
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => `${key}=${value}`);
-
-    const dataCheckString = dataCheckArr.join('\n');
-
-    console.log('Data check array:', dataCheckArr);
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n');
+    
     console.log('Data check string:', dataCheckString);
-
-    // Calculate secret key
+    
+    // The secret key is a SHA256 hash of the bot's token
     const secretKey = createHash('sha256')
       .update(botToken)
       .digest();
-
+    
     console.log('Secret key (hex):', secretKey.toString('hex'));
-
-    // Calculate data signature
-    const hmac = createHmac('sha256', secretKey);
-    hmac.update(dataCheckString);
-    const signature = hmac.digest('hex');
-
+    
+    // The signature is a hex-encoded HMAC-SHA-256 signature of the data-check-string 
+    // using the secret key
+    const signature = createHmac('sha256', secretKey)
+      .update(dataCheckString)
+      .digest('hex');
+    
     console.log('Validation details:', {
       dataCheckString,
       expectedHash: hash,
       calculatedSignature: signature,
       match: signature === hash
     });
-
+    
     return signature === hash;
   } catch (error) {
     console.error('Error checking signature:', error);
@@ -129,7 +128,7 @@ export async function POST(request: Request) {
     console.log('Processing initData:', initData);
 
     // Verify signature
-    const isValid = checkSignature(initData, BOT_TOKEN!);
+    const isValid = checkTelegramSignature(initData, BOT_TOKEN!);
     if (!isValid) {
       console.log('Invalid signature');
       return NextResponse.json(
