@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import { useTelegram } from '@/components/TelegramProvider';
-import ErrorScreen from '@/components/ErrorScreen';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function RootLayoutClient({ children }: { children: React.ReactNode }) {
