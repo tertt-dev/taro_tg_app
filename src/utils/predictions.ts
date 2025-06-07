@@ -149,83 +149,6 @@ export const TAROT_CARDS: Card[] = [
   }
 ];
 
-const SPREAD_POSITIONS: Record<SpreadType, string[]> = {
-  'daily': ['Карта дня'],
-  'past-present-future': ['Прошлое', 'Настоящее', 'Будущее'],
-  'celtic-cross': [
-    'Текущая ситуация',
-    'Препятствие',
-    'Основа ситуации',
-    'Прошлое',
-    'Возможное будущее',
-    'Ближайшее будущее',
-    'Ваше отношение',
-    'Внешние влияния',
-    'Надежды и страхи',
-    'Итог'
-  ],
-  'relationship': [
-    'Вы',
-    'Партнер',
-    'Ваши отношения',
-    'Препятствия',
-    'Потенциал развития'
-  ]
-};
-
-const SPREAD_DESCRIPTIONS: Record<SpreadType, (cards: Card[]) => string> = {
-  'daily': (cards) => 
-    `${cards[0].name} говорит о том, что сегодня вам следует обратить внимание на ${cards[0].description.toLowerCase()}.`,
-  
-  'past-present-future': (cards) =>
-    `В прошлом ${cards[0].name.toLowerCase()} показывает ${cards[0].description.toLowerCase()}. ` +
-    `В настоящем ${cards[1].name.toLowerCase()} указывает на ${cards[1].description.toLowerCase()}. ` +
-    `В будущем ${cards[2].name.toLowerCase()} предвещает ${cards[2].description.toLowerCase()}.`,
-  
-  'celtic-cross': (cards) =>
-    `Ключевой аспект ситуации - ${cards[0].name.toLowerCase()}, что говорит о ${cards[0].description.toLowerCase()}. ` +
-    `Основное препятствие - ${cards[1].name.toLowerCase()}. ` +
-    `Итог ситуации может привести к ${cards[9].name.toLowerCase()}, что означает ${cards[9].description.toLowerCase()}.`,
-  
-  'relationship': (cards) =>
-    `Ваша позиция отражена в карте ${cards[0].name.toLowerCase()}, что указывает на ${cards[0].description.toLowerCase()}. ` +
-    `Партнёр представлен картой ${cards[1].name.toLowerCase()}. ` +
-    `Ваши отношения характеризует ${cards[2].name.toLowerCase()}, ` +
-    `а потенциал развития показывает ${cards[4].name.toLowerCase()}.`
-};
-
-export async function generatePrediction(spreadType: SpreadType = 'daily'): Promise<Prediction> {
-  const positions = SPREAD_POSITIONS[spreadType];
-  const cardCount = positions.length;
-  
-  // Select random cards for the spread
-  const selectedCards: Card[] = [];
-  while (selectedCards.length < cardCount) {
-    const randomIndex = Math.floor(Math.random() * TAROT_CARDS.length);
-    if (!selectedCards.includes(TAROT_CARDS[randomIndex])) {
-      selectedCards.push(TAROT_CARDS[randomIndex]);
-    }
-  }
-
-  // Add position information to each card
-  const cardsWithPositions = selectedCards.map((card, index) => ({
-    ...card,
-    position: positions[index]
-  }));
-
-  return {
-    date: new Date().toLocaleDateString('ru-RU', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }),
-    cards: cardsWithPositions,
-    text: SPREAD_DESCRIPTIONS[spreadType](selectedCards),
-    spreadType
-  };
-}
-
 export function getRandomCards(count: number): Card[] {
   const shuffled = [...TAROT_CARDS].sort(() => Math.random() - 0.5)
   return shuffled.slice(0, count)
@@ -259,4 +182,38 @@ const POSITION_LABELS: Record<SpreadId, string[]> = {
 
 export function getPositionLabel(spreadId: SpreadId, position: number): string {
   return POSITION_LABELS[spreadId]?.[position] || ''
+}
+
+const SPREAD_DESCRIPTIONS: Record<SpreadId, (cards: Card[]) => string> = {
+  'daily': (cards) => 
+    `${cards[0].name} говорит о том, что сегодня вам следует обратить внимание на ${cards[0].description.toLowerCase()}.`,
+  
+  'past-present-future': (cards) =>
+    `В прошлом ${cards[0].name.toLowerCase()} показывает ${cards[0].description.toLowerCase()}. ` +
+    `В настоящем ${cards[1].name.toLowerCase()} указывает на ${cards[1].description.toLowerCase()}. ` +
+    `В будущем ${cards[2].name.toLowerCase()} предвещает ${cards[2].description.toLowerCase()}.`,
+  
+  'celtic-cross': (cards) =>
+    `Ключевой аспект ситуации - ${cards[0].name.toLowerCase()}, что говорит о ${cards[0].description.toLowerCase()}. ` +
+    `Основное препятствие - ${cards[1].name.toLowerCase()}. ` +
+    `Итог ситуации может привести к ${cards[9].name.toLowerCase()}, что означает ${cards[9].description.toLowerCase()}.`,
+  
+  'relationship': (cards) =>
+    `Ваша позиция отражена в карте ${cards[0].name.toLowerCase()}, что указывает на ${cards[0].description.toLowerCase()}. ` +
+    `Партнёр представлен картой ${cards[1].name.toLowerCase()}. ` +
+    `Ваши отношения характеризует ${cards[2].name.toLowerCase()}, ` +
+    `а потенциал развития показывает ${cards[4].name.toLowerCase()}.`
+}
+
+export async function generatePrediction(spread: SpreadType): Promise<Prediction> {
+  const positions = POSITION_LABELS[spread.id]
+  const cards = getRandomCards(positions.length)
+  const text = SPREAD_DESCRIPTIONS[spread.id](cards)
+  
+  return {
+    date: new Date().toLocaleString('ru-RU'),
+    cards,
+    text,
+    spreadType: spread
+  }
 } 

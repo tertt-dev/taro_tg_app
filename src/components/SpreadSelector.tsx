@@ -3,14 +3,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Heart, Compass } from 'lucide-react';
+import { type SpreadId } from '@/utils/predictions';
 
-export type SpreadType = {
-  id: string;
+export interface SpreadType {
+  id: SpreadId;
   name: string;
   description: string;
   cardCount: number;
   icon: React.ReactElement;
-};
+}
 
 export const spreads: SpreadType[] = [
   {
