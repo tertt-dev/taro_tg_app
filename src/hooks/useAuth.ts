@@ -9,6 +9,10 @@ export function useAuth() {
     console.log('useAuth: InitData present:', !!initData);
     
     try {
+      if (!initData) {
+        throw new Error('No initData provided');
+      }
+
       console.log('useAuth: Sending authentication request to /api/auth/signin');
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
@@ -24,7 +28,11 @@ export function useAuth() {
       console.log('useAuth: Response data:', data);
 
       if (!response.ok) {
-        throw new Error(data.error || 'Authentication failed');
+        let errorMessage = data.error || 'Authentication failed';
+        if (data.details) {
+          errorMessage += `: ${data.details}`;
+        }
+        throw new Error(errorMessage);
       }
 
       console.log('useAuth: Authentication successful');
@@ -51,13 +59,18 @@ export function useAuth() {
       const data = await response.json();
       console.log('useAuth: Check auth response data:', data);
 
-      setIsAuthenticated(response.ok);
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to check authentication status');
+      }
+
+      setIsAuthenticated(true);
       setError(null);
-      return response.ok;
+      return true;
     } catch (err) {
       console.error('useAuth: Check auth error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to check authentication status';
       setIsAuthenticated(false);
-      setError('Failed to check authentication status');
+      setError(errorMessage);
       return false;
     }
   }, []);

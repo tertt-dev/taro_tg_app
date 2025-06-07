@@ -6,11 +6,29 @@ declare global {
   }
 }
 
+interface MainButton {
+  text: string;
+  color: string;
+  textColor: string;
+  isVisible: boolean;
+  isActive: boolean;
+  isProgressVisible: boolean;
+  show: () => void;
+  hide: () => void;
+  enable: () => void;
+  disable: () => void;
+  showProgress: () => void;
+  hideProgress: () => void;
+  setText: (text: string) => void;
+  onClick: (callback: () => void) => void;
+  offClick: (callback: () => void) => void;
+}
+
 interface WebApp {
   initData: string;
-  initDataUnsafe?: {
-    query_id?: string;
-    user?: {
+  initDataUnsafe: {
+    query_id: string;
+    user: {
       id: number;
       first_name: string;
       last_name?: string;
@@ -18,18 +36,20 @@ interface WebApp {
       language_code?: string;
       photo_url?: string;
     };
-    auth_date?: string;
-    hash?: string;
+    auth_date: number;
+    hash: string;
   };
-  ready?: () => void;
-  expand?: () => void;
-  close?: () => void;
-  MainButton?: {
-    text: string;
-    show: () => void;
-    hide: () => void;
-    onClick: (callback: () => void) => void;
-  };
+  platform: string;
+  version: string;
+  viewportHeight: number;
+  viewportStableHeight: number;
+  isExpanded: boolean;
+  onEvent(eventType: string, eventHandler: (...args: any[]) => void): void;
+  offEvent(eventType: string, eventHandler: (...args: any[]) => void): void;
+  ready(): void;
+  expand(): void;
+  close(): void;
+  MainButton: MainButton;
   BackButton?: {
     show: () => void;
     hide: () => void;
@@ -37,10 +57,6 @@ interface WebApp {
     offClick: (callback: () => void) => void;
     isVisible: boolean;
   };
-  viewportHeight?: number;
-  viewportStableHeight?: number;
-  onEvent?: (eventType: string, eventHandler: () => void) => void;
-  offEvent?: (eventType: string, eventHandler: () => void) => void;
   openTelegramLink?: (url: string) => void;
 }
 

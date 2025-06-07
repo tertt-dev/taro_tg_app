@@ -1,91 +1,102 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useEffect, useState } from 'react';
+import { useTelegramWebApp } from '@/components/TelegramProvider';
 
 export default function DebugPage() {
-  const [initData, setInitData] = useState('');
+  const { webApp, ready, error, isAuthenticated } = useTelegramWebApp();
+  const [initData, setInitData] = useState<string>('');
   const [logs, setLogs] = useState<string[]>([]);
-  const { authenticate, isAuthenticated, error } = useAuth();
-
-  const addLog = (message: string) => {
-    setLogs(prev => [...prev, `${new Date().toISOString()}: ${message}`]);
-  };
-
-  const handleAuthenticate = async () => {
-    addLog(`Starting authentication with initData: ${initData}`);
-    const result = await authenticate(initData);
-    addLog(`Authentication result: ${result}`);
-  };
 
   useEffect(() => {
-    // Try to get initData from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const initDataFromUrl = urlParams.get('initData');
-    if (initDataFromUrl) {
-      setInitData(initDataFromUrl);
-      addLog(`Found initData in URL: ${initDataFromUrl}`);
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      setInitData(urlParams.get('initData') || '');
     }
   }, []);
 
+  useEffect(() => {
+    const addLog = (message: string) => {
+      setLogs(prev => [...prev, `${new Date().toISOString()}: ${message}`]);
+    };
+
+    addLog(`Ready: ${ready}`);
+    addLog(`WebApp available: ${!!webApp}`);
+    if (webApp) {
+      addLog(`Platform: ${webApp.platform}`);
+      addLog(`Version: ${webApp.version}`);
+      addLog(`InitData: ${webApp.initData}`);
+      addLog(`User: ${JSON.stringify(webApp.initDataUnsafe.user, null, 2)}`);
+    }
+    if (error) {
+      addLog(`Error: ${error}`);
+    }
+    addLog(`Authenticated: ${isAuthenticated}`);
+  }, [ready, webApp, error, isAuthenticated]);
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
+    <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Authentication Debug Page</h1>
+        <h1 className="text-3xl font-bold mb-8">Debug Info</h1>
         
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Status</h2>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="bg-gray-800 p-4 rounded">
-              <p className="text-sm text-gray-400">Authentication Status</p>
-              <p className={isAuthenticated ? 'text-green-500' : 'text-red-500'}>
-                {isAuthenticated ? 'Authenticated' : 'Not Authenticated'}
-              </p>
-            </div>
-            <div className="bg-gray-800 p-4 rounded">
-              <p className="text-sm text-gray-400">Error</p>
-              <p className="text-red-500">{error || 'None'}</p>
+        <div className="space-y-6">
+          <div className="bg-white/5 rounded-xl p-6">
+            <h2 className="text-xl font-semibold mb-4">Authentication Status</h2>
+            <div className="space-y-2">
+              <p>Ready: <span className={ready ? 'text-green-500' : 'text-red-500'}>{ready ? 'Yes' : 'No'}</span></p>
+              <p>Authenticated: <span className={isAuthenticated ? 'text-green-500' : 'text-red-500'}>{isAuthenticated ? 'Yes' : 'No'}</span></p>
+              <p>Error: <span className="text-red-500">{error || 'None'}</span></p>
             </div>
           </div>
-        </div>
 
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Test Authentication</h2>
-          <div className="flex gap-4 mb-4">
-            <textarea
-              value={initData}
-              onChange={(e) => setInitData(e.target.value)}
-              placeholder="Paste initData here..."
-              className="flex-1 bg-gray-800 text-white p-4 rounded"
-              rows={4}
-            />
-            <button
-              onClick={handleAuthenticate}
-              className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 transition-colors h-fit"
-            >
-              Authenticate
-            </button>
+          <div className="bg-white/5 rounded-xl p-6">
+            <h2 className="text-xl font-semibold mb-4">WebApp Status</h2>
+            <div className="space-y-2">
+              <p>WebApp Available: <span className={webApp ? 'text-green-500' : 'text-red-500'}>{webApp ? 'Yes' : 'No'}</span></p>
+              <p>Platform: <span className="text-gray-400">{webApp?.platform || 'Unknown'}</span></p>
+              <p>Version: <span className="text-gray-400">{webApp?.version || 'Unknown'}</span></p>
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Debug Logs</h2>
-          <div className="bg-gray-800 p-4 rounded">
-            {logs.map((log, index) => (
-              <p key={index} className="font-mono text-sm mb-1">{log}</p>
-            ))}
+          <div className="bg-white/5 rounded-xl p-6">
+            <h2 className="text-xl font-semibold mb-4">User Data</h2>
+            <div className="space-y-2">
+              {webApp?.initDataUnsafe?.user ? (
+                <>
+                  <p>ID: <span className="text-gray-400">{webApp.initDataUnsafe.user.id}</span></p>
+                  <p>Name: <span className="text-gray-400">{webApp.initDataUnsafe.user.first_name} {webApp.initDataUnsafe.user.last_name}</span></p>
+                  <p>Username: <span className="text-gray-400">@{webApp.initDataUnsafe.user.username || 'none'}</span></p>
+                </>
+              ) : (
+                <p className="text-red-500">No user data available</p>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="mt-8 text-sm text-gray-400">
-          <h3 className="font-semibold mb-2">How to test:</h3>
-          <ol className="list-decimal list-inside space-y-2">
-            <li>Open your app in Telegram</li>
-            <li>Check browser console for initData</li>
-            <li>Copy the initData value</li>
-            <li>Paste it here and click Authenticate</li>
-            <li>Check the logs for results</li>
-          </ol>
+          <div className="bg-white/5 rounded-xl p-6">
+            <h2 className="text-xl font-semibold mb-4">Init Data</h2>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">From URL:</p>
+              <pre className="bg-black/50 p-4 rounded-lg overflow-x-auto text-xs">
+                {initData || 'No initData in URL'}
+              </pre>
+              <p className="text-sm font-medium mt-4">From WebApp:</p>
+              <pre className="bg-black/50 p-4 rounded-lg overflow-x-auto text-xs">
+                {webApp?.initData || 'No WebApp initData'}
+              </pre>
+            </div>
+          </div>
+
+          <div className="bg-white/5 rounded-xl p-6">
+            <h2 className="text-xl font-semibold mb-4">Debug Logs</h2>
+            <div className="space-y-2">
+              {logs.map((log, index) => (
+                <pre key={index} className="bg-black/50 p-2 rounded text-xs font-mono">
+                  {log}
+                </pre>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

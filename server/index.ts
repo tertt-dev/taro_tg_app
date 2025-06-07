@@ -26,7 +26,7 @@ if (botToken) {
     bot.onText(/\/start/, (msg: TelegramBot.Message) => {
       if (!bot) return;
 
-      const chatId = msg.chat.id;
+        const chatId = msg.chat.id;
       const user = msg.from;
       
       // Create WebApp URL with user data

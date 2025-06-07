@@ -6,32 +6,27 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret';
 
 // Define paths that should skip authentication
 const PUBLIC_PATHS = [
-  '/',              // Root path should be public to start auth flow
-  '/api/auth/signin',
-  '/api/auth/check',
+  '/',
   '/debug',
+  '/api/auth',
   '/_next',
-  '/favicon.ico'
+  '/favicon.ico',
+  '/.well-known',
 ];
 
-export async function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname;
-  console.log('Middleware: Processing request for', path);
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  // Check if the path should skip authentication
-  const isPublicPath = PUBLIC_PATHS.some(publicPath => 
-    path === publicPath || path.startsWith(`${publicPath}/`)
-  );
-  
+  // Check if the path is public
+  const isPublicPath = PUBLIC_PATHS.some(path => pathname.startsWith(path));
   if (isPublicPath) {
-    console.log('Middleware: Skipping auth for public path:', path);
     return NextResponse.next();
   }
 
-  // Skip static files and well-known paths
-  if (path.includes('.') || path.startsWith('/.well-known')) {
-    console.log('Middleware: Skipping auth for static/well-known file:', path);
-    return NextResponse.next();
+  // For protected routes, check authentication
+  const initData = request.nextUrl.searchParams.get('initData');
+  if (!initData) {
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   const accessToken = request.cookies.get('access_token')?.value;
@@ -40,11 +35,11 @@ export async function middleware(request: NextRequest) {
   console.log('Middleware: Tokens present:', {
     accessToken: !!accessToken,
     refreshToken: !!refreshToken,
-    path
+    path: pathname
   });
 
   if (!accessToken) {
-    console.log('Middleware: No access token provided for path:', path);
+    console.log('Middleware: No access token provided for path:', pathname);
     // Instead of returning error JSON, redirect to home page
     return NextResponse.redirect(new URL('/', request.url));
   }
