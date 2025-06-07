@@ -70,23 +70,23 @@ const LayoutContent = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!webApp) return;
 
-    const updateHeight = () => {
+      const updateHeight = () => {
       if (webApp.viewportHeight) {
         setViewportHeight(`${webApp.viewportHeight}px`);
       }
-    };
+      };
 
-    updateHeight();
+      updateHeight();
 
     if (webApp.onEvent) {
       webApp.onEvent('viewportChanged', updateHeight);
     }
 
-    return () => {
+      return () => {
       if (webApp.offEvent) {
         webApp.offEvent('viewportChanged', updateHeight);
       }
-    };
+      };
   }, [webApp]);
 
   if (error) {

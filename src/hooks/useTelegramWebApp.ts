@@ -21,7 +21,7 @@ export const useTelegramWebApp = () => {
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Failed to initialize Telegram WebApp';
         setError(errorMsg);
-      }
+        }
     }
   }, []);
 

@@ -10,6 +10,10 @@ const JWT_SECRET = process.env.JWT_SECRET;
 function validateEnvironment() {
   const missingVars = [];
   
+  console.log('Checking environment variables:');
+  console.log('BOT_TOKEN length:', BOT_TOKEN?.length);
+  console.log('JWT_SECRET length:', JWT_SECRET?.length);
+  
   if (!BOT_TOKEN || BOT_TOKEN.length === 0) {
     missingVars.push('BOT_TOKEN');
   }
@@ -27,39 +31,46 @@ function validateEnvironment() {
 }
 
 function checkSignature(initData: string, botToken: string): boolean {
-  const urlParams = new URLSearchParams(initData);
-  const hash = urlParams.get('hash');
-  if (!hash) {
-    console.log('No hash found in initData');
+  try {
+    const urlParams = new URLSearchParams(initData);
+    const hash = urlParams.get('hash');
+    if (!hash) {
+      console.log('No hash found in initData');
+      return false;
+    }
+
+    // Remove hash from data before checking signature
+    urlParams.delete('hash');
+
+    // Sort parameters alphabetically
+    const dataCheckArr = Array.from(urlParams.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}=${value}`);
+
+    const dataCheckString = dataCheckArr.join('\n');
+
+    // Calculate secret key
+    const secretKey = createHash('sha256')
+      .update(botToken)
+      .digest();
+
+    // Calculate data signature
+    const signature = createHmac('sha256', secretKey)
+      .update(dataCheckString)
+      .digest('hex');
+
+    console.log('Validation details:', {
+      dataCheckString,
+      expectedHash: hash,
+      calculatedSignature: signature,
+      match: signature === hash
+    });
+
+    return signature === hash;
+  } catch (error) {
+    console.error('Error checking signature:', error);
     return false;
   }
-
-  // Remove hash from data before checking signature
-  urlParams.delete('hash');
-  
-  // Sort parameters alphabetically
-  const dataCheckString = Array.from(urlParams.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${key}=${value}`)
-    .join('\n');
-
-  // Calculate secret key
-  const secretKey = createHash('sha256')
-    .update(botToken)
-    .digest();
-
-  // Calculate data signature
-  const signature = createHmac('sha256', secretKey)
-    .update(dataCheckString)
-    .digest('hex');
-
-  console.log('Checking signature:');
-  console.log('Data check string:', dataCheckString);
-  console.log('Expected hash:', hash);
-  console.log('Calculated signature:', signature);
-  console.log('Match:', signature === hash);
-
-  return signature === hash;
 }
 
 interface TelegramUser {
@@ -76,19 +87,18 @@ export async function POST(request: Request) {
     // Validate environment first
     if (!validateEnvironment()) {
       return NextResponse.json(
-        { error: 'Server configuration error. Please contact support.' },
+        { error: 'Ошибка конфигурации сервера. Пожалуйста, обратитесь в поддержку.' },
         { status: 500 }
       );
     }
 
-    console.log('Processing authentication request...');
     const body = await request.json();
     const initData = body.initData as string;
 
     if (!initData) {
       console.log('No initData provided');
       return NextResponse.json(
-        { error: 'No initData provided' },
+        { error: 'Не предоставлены данные инициализации' },
         { status: 400 }
       );
     }
@@ -100,7 +110,7 @@ export async function POST(request: Request) {
     if (!isValid) {
       console.log('Invalid signature');
       return NextResponse.json(
-        { error: 'Invalid signature' },
+        { error: 'Ошибка проверки подписи. Пожалуйста, попробуйте снова.' },
         { status: 401 }
       );
     }
@@ -111,24 +121,19 @@ export async function POST(request: Request) {
     if (!userStr) {
       console.log('No user data in initData');
       return NextResponse.json(
-        { error: 'No user data in initData' },
+        { error: 'Данные пользователя не найдены' },
         { status: 400 }
       );
     }
 
-    console.log('User data string:', userStr);
-
     let user: TelegramUser;
     try {
-      // Since we checked userStr is not null above, we can safely use it here
-      const decodedStr = decodeURIComponent(userStr!);
-      console.log('Decoded user string:', decodedStr);
+      const decodedStr = decodeURIComponent(userStr);
       user = JSON.parse(decodedStr);
-      console.log('Parsed user object:', user);
     } catch (error) {
       console.error('Failed to parse user data:', error);
       return NextResponse.json(
-        { error: 'Invalid user data format' },
+        { error: 'Неверный формат данных пользователя' },
         { status: 400 }
       );
     }
@@ -137,7 +142,7 @@ export async function POST(request: Request) {
     if (!user.id || !user.first_name) {
       console.log('Missing required user fields:', user);
       return NextResponse.json(
-        { error: 'Missing required user fields' },
+        { error: 'Отсутствуют обязательные поля пользователя' },
         { status: 400 }
       );
     }
@@ -154,8 +159,6 @@ export async function POST(request: Request) {
       { expiresIn: '24h' }
     );
 
-    console.log('Generated JWT token');
-
     // Set JWT token in cookie
     const response = NextResponse.json({ success: true });
     response.cookies.set('token', token, {
@@ -165,12 +168,11 @@ export async function POST(request: Request) {
       maxAge: 60 * 60 * 24 // 24 hours
     });
 
-    console.log('Authentication successful');
     return response;
   } catch (error) {
     console.error('Authentication error:', error);
     return NextResponse.json(
-      { error: 'Authentication failed' },
+      { error: 'Ошибка аутентификации. Пожалуйста, попробуйте позже.' },
       { status: 500 }
     );
   }

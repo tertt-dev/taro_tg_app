@@ -141,9 +141,14 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   // Handle authentication
   useEffect(() => {
     const authenticate = async () => {
-      if (!webApp?.initData) return;
+      if (!webApp?.initData) {
+        setError('Ошибка: отсутствуют данные инициализации');
+        return;
+      }
 
       try {
+        console.log('Authenticating with initData:', webApp.initData);
+        
         const response = await fetch('/api/auth', {
           method: 'POST',
           headers: {
@@ -152,12 +157,14 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
           body: JSON.stringify({ initData: webApp.initData }),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || `Ошибка аутентификации: ${response.statusText}`);
+          throw new Error(data.error || 'Ошибка аутентификации');
         }
 
         setIsAuthenticated(true);
+        setError(null);
       } catch (err) {
         console.error('Authentication error:', err);
         setError(err instanceof Error ? err.message : 'Ошибка аутентификации');

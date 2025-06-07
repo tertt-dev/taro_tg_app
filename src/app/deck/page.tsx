@@ -38,13 +38,13 @@ export default function DeckPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <TarotCard
-                {...card}
-                isRevealed={true}
-                onReveal={() => setSelectedCard(index)}
+                <TarotCard
+                  {...card}
+                  isRevealed={true}
+                  onReveal={() => setSelectedCard(index)}
                 showDescription={false}
                 size="sm"
-              />
+                />
             </motion.div>
           ))}
         </div>
