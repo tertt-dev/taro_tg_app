@@ -1,20 +1,41 @@
+'use client';
+
 import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface HeaderProps {
   onHistoryClick?: () => void;
 }
 
 export const Header = ({ onHistoryClick }: HeaderProps) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const showBackButton = pathname !== '/';
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       className="relative text-center py-8 space-y-2"
     >
+      <div className="absolute left-4 top-4 flex items-center gap-4">
+        {showBackButton && (
+          <motion.button
+            onClick={() => router.back()}
+            className="p-2 text-white/60 hover:text-white transition-colors rounded-full hover:bg-white/10"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </motion.button>
+        )}
+      </div>
+
       {onHistoryClick && (
         <motion.button
           onClick={onHistoryClick}
-          className="absolute right-4 top-4 p-2 text-zinc-400 hover:text-white transition-colors"
+          className="absolute right-4 top-4 p-2 text-white/60 hover:text-white transition-colors rounded-full hover:bg-white/10"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >

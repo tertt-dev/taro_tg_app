@@ -42,8 +42,8 @@ const CardDetails = ({ card, onClose }: CardDetailsProps) => (
             isInteractive={false}
           />
         </div>
-        <h2 className="text-2xl font-semibold mb-4">{card.name}</h2>
-        <p className="text-muted-foreground text-center leading-relaxed">
+        <h2 className="text-2xl font-semibold mb-4 font-cormorant">{card.name}</h2>
+        <p className="text-muted-foreground text-center leading-relaxed font-cormorant">
           {card.description}
         </p>
       </div>
@@ -64,8 +64,8 @@ export default function DeckPage() {
           className="max-w-4xl mx-auto"
         >
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold gold-text">Колода Таро</h1>
-            <p className="text-gray-400">
+            <h1 className="text-3xl font-bold gold-text font-cormorant">Колода Таро</h1>
+            <p className="text-gray-400 font-cormorant">
               Добро пожаловать, {user?.first_name}
             </p>
           </div>

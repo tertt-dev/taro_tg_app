@@ -17,12 +17,14 @@ const config: Config = {
         'text-secondary': 'var(--text-secondary)',
       },
       fontFamily: {
-        'cormorant': ['var(--font-cormorant)', 'serif'],
+        cormorant: ['Cormorant', 'serif'],
         'inter': ['var(--font-inter)', 'sans-serif'],
         'dm-sans': ['var(--font-dm-sans)', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic':
+          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
       boxShadow: {
         'mystic': '0 0 15px rgba(212, 175, 55, 0.3)',

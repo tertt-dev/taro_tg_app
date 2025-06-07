@@ -62,12 +62,12 @@ export function SpreadSelector({ onSelect }: SpreadSelectorProps) {
           <div className="mb-2 text-primary group-hover:scale-110 transition-transform relative z-10">
             {spread.icon}
           </div>
-          <h3 className="text-lg font-medium mb-1 relative z-10">{spread.name}</h3>
-          <p className="text-xs text-muted-foreground text-center relative z-10">
+          <h3 className="text-lg font-medium mb-1 relative z-10 font-cormorant">{spread.name}</h3>
+          <p className="text-xs text-muted-foreground text-center relative z-10 font-cormorant">
             {spread.description}
           </p>
           {spread.cardCount > 0 && (
-            <div className="mt-2 text-xs text-muted-foreground relative z-10">
+            <div className="mt-2 text-xs text-muted-foreground relative z-10 font-cormorant">
               {spread.cardCount} {spread.cardCount === 1 ? 'карта' : 'карты'}
             </div>
           )}

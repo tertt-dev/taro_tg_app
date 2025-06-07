@@ -3,6 +3,8 @@
 import { useEffect, useRef } from 'react';
 import { useTelegram } from '@/components/TelegramProvider';
 import LoadingScreen from '@/components/LoadingScreen';
+import ErrorScreen from '@/components/ErrorScreen';
+import { ClientWrapper } from '@/components/ClientWrapper';
 
 export default function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const { webApp, ready, error } = useTelegram();
@@ -21,7 +23,9 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
     // Set up viewport change handler
     if (webApp.onEvent) {
       webApp.onEvent('viewportChanged', () => {
-        // Handle viewport changes if needed
+        if (webApp.isExpanded) {
+          // Handle expanded state if needed
+        }
       });
     }
 
@@ -32,28 +36,22 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
     };
   }, [webApp]);
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-black text-white p-4">
-        <div className="max-w-md mx-auto text-center">
-          <h1 className="text-2xl font-bold text-red-500 mb-4">Ошибка</h1>
-          <p className="text-lg mb-4">{error.message}</p>
-          <div className="text-sm text-gray-400">
-            <p>WebApp доступен: {webApp ? 'Да' : 'Нет'}</p>
-            <p>Готов к работе: {ready ? 'Да' : 'Нет'}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!ready || !webApp) {
+  // Show loading screen while initializing
+  if (!ready) {
     return <LoadingScreen />;
   }
 
+  // Show error screen if there's an error
+  if (error) {
+    return <ErrorScreen message={error.message} />;
+  }
+
+  // Show main content when ready and no errors
   return (
-    <div ref={containerRef} className="min-h-screen bg-black text-white">
-      {children}
-    </div>
+    <ClientWrapper>
+      <div ref={containerRef} className="min-h-screen bg-black text-white">
+        {children}
+      </div>
+    </ClientWrapper>
   );
 } 

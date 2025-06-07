@@ -14,7 +14,7 @@ export default function Home() {
     <div className="container mx-auto max-w-lg px-4 py-8">
       <h1 className="text-3xl font-bold text-center mb-8">
         Выберите расклад
-      </h1>
+          </h1>
       <SpreadSelector onSelect={handleSpreadSelect} />
     </div>
   );

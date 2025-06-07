@@ -5,14 +5,24 @@ import { BottomNav } from '@/components/BottomNav'
 
 export function ClientWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <div className="fixed inset-0 z-0">
+    <div className="min-h-screen flex flex-col">
+      {/* Background layer */}
+      <div className="fixed inset-0 bg-black -z-30" />
+      
+      {/* Particles layer */}
+      <div className="fixed inset-0 -z-20">
         <ParticlesBackground />
       </div>
-      <main className="relative z-10">
+      
+      {/* Content layer */}
+      <main className="flex-1 relative z-10">
         {children}
       </main>
-      <BottomNav />
-    </>
+      
+      {/* Navigation layer */}
+      <div className="relative z-50">
+        <BottomNav />
+      </div>
+    </div>
   )
 } 

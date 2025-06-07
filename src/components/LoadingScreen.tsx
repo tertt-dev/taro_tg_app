@@ -1,4 +1,18 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+
 export default function LoadingScreen() {
+  const [showError, setShowError] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowError(true);
+    }, 10000); // Show error message after 10 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="fixed inset-0 bg-black flex items-center justify-center">
       <div className="text-white text-center">
@@ -24,7 +38,19 @@ export default function LoadingScreen() {
             />
           </svg>
         </div>
-        <p className="text-lg">Загрузка...</p>
+        <p className="text-lg mb-2">Загрузка...</p>
+        {showError && (
+          <div className="mt-4 text-red-400 max-w-sm mx-auto">
+            <p className="text-sm">
+              Загрузка занимает больше времени, чем обычно. Пожалуйста:
+            </p>
+            <ul className="text-sm mt-2 text-left list-disc pl-4">
+              <li>Убедитесь, что вы открыли приложение через Telegram</li>
+              <li>Проверьте ваше интернет-соединение</li>
+              <li>Попробуйте обновить страницу</li>
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

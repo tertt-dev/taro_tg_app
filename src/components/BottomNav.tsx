@@ -2,56 +2,66 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, Clock, LayoutGrid, User } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 const navItems = [
   {
     name: 'Главная',
     icon: Home,
     path: '/',
+    testPath: '/test'
   },
   {
     name: 'История',
     icon: Clock,
     path: '/history',
+    testPath: '/test/history'
   },
   {
     name: 'Колода',
     icon: LayoutGrid,
     path: '/deck',
+    testPath: '/test/deck'
   },
   {
     name: 'Профиль',
     icon: User,
     path: '/profile',
+    testPath: '/test/profile'
   },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const isTestMode = pathname?.startsWith('/test');
+
+  const handleNavigation = (item: typeof navItems[0]) => {
+    const targetPath = isTestMode ? item.testPath : item.path;
+    router.push(targetPath);
+  };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50">
+    <nav className="fixed bottom-0 left-0 right-0">
       <div className="mx-auto max-w-lg">
-        <div className="flex justify-around items-center bg-black/40 backdrop-blur-md border-t border-white/10 px-4 py-2">
+        <div className="flex justify-around items-center bg-black/80 backdrop-blur-md border-t border-white/10 px-4 py-3">
           {navItems.map((item) => {
-            const isActive = pathname === item.path;
+            const isActive = isTestMode 
+              ? pathname === item.testPath
+              : pathname === item.path;
+
             return (
-              <button
-                key={item.name}
-                onClick={() => router.push(item.path)}
-                className={cn(
-                  'flex flex-col items-center justify-center min-w-[64px] py-1 px-2 rounded-lg transition-all duration-200',
-                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'
-                )}
+              <motion.button
+                key={item.path}
+                onClick={() => handleNavigation(item)}
+                className={`flex flex-col items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  isActive ? 'text-white' : 'text-white/40 hover:text-white/80'
+                }`}
+                whileTap={{ scale: 0.95 }}
               >
-                <item.icon className={cn(
-                  'w-6 h-6 transition-transform',
-                  isActive && 'scale-110'
-                )} />
-                <span className="text-xs mt-1">{item.name}</span>
-              </button>
+                <item.icon className="w-7 h-7" />
+                <span className="text-sm font-medium font-cormorant">{item.name}</span>
+              </motion.button>
             );
           })}
         </div>

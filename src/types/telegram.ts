@@ -4,32 +4,28 @@ export interface TelegramWebAppUser {
   last_name?: string;
   username?: string;
   language_code?: string;
-  photo_url?: string;
 }
 
 export interface TelegramWebAppInitData {
-  query_id: string;
-  user: TelegramWebAppUser;
-  auth_date: number;
-  hash: string;
+  query_id?: string;
+  user?: TelegramWebAppUser;
+  auth_date?: number;
+  hash?: string;
 }
 
 export interface TelegramWebApp {
-  initData: string;
+  ready: () => void;
+  expand: () => void;
+  close: () => void;
+  isExpanded: boolean;
+  viewportHeight: number;
+  viewportStableHeight: number;
   initDataUnsafe: TelegramWebAppInitData;
-  platform?: string;
-  version?: string;
-  viewportHeight?: number;
-  viewportStableHeight?: number;
-  isExpanded?: boolean;
-  BackButton?: {
-    isVisible: boolean;
-    show: () => void;
-    hide: () => void;
-    onClick: (callback: () => void) => void;
-    offClick: (callback: () => void) => void;
-  };
-  MainButton?: {
+  onEvent: (eventType: string, eventHandler: () => void) => void;
+  offEvent: (eventType: string, eventHandler: () => void) => void;
+  sendData: (data: any) => void;
+  platform: string;
+  MainButton: {
     text: string;
     color: string;
     textColor: string;
@@ -46,11 +42,13 @@ export interface TelegramWebApp {
     onClick: (callback: () => void) => void;
     offClick: (callback: () => void) => void;
   };
-  onEvent?: (eventType: string, callback: () => void) => void;
-  offEvent?: (eventType: string, callback: () => void) => void;
-  ready?: () => void;
-  expand?: () => void;
-  close?: () => void;
+  BackButton: {
+    isVisible: boolean;
+    show: () => void;
+    hide: () => void;
+    onClick: (callback: () => void) => void;
+    offClick: (callback: () => void) => void;
+  };
 }
 
 export interface TelegramUser {

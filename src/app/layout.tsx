@@ -1,16 +1,8 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import Script from 'next/script';
+'use client';
+
 import './globals.css';
 import { TelegramProvider } from '@/components/TelegramProvider';
 import RootLayoutClient from '@/components/RootLayoutClient';
-
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'Таро Бот',
-  description: 'Telegram Mini App для гадания на картах Таро',
-};
 
 export default function RootLayout({
   children,
@@ -18,18 +10,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
-      <head>
-        <Script
-          src="https://telegram.org/js/telegram-web-app.js"
-          strategy="beforeInteractive"
-        />
-      </head>
-      <body className={inter.className}>
+    <html lang="ru" className="h-full">
+      <body className="h-full">
         <TelegramProvider>
-          <RootLayoutClient>
-            {children}
-          </RootLayoutClient>
+          <RootLayoutClient>{children}</RootLayoutClient>
         </TelegramProvider>
       </body>
     </html>
