@@ -1,9 +1,10 @@
+import { type SpreadType } from '@/components/SpreadSelector'
+
 export interface Card {
   name: string;
   image: string;
   description: string;
   cardNumber: string;
-  position?: string;
 }
 
 export interface Prediction {
@@ -12,8 +13,6 @@ export interface Prediction {
   text: string;
   spreadType: SpreadType;
 }
-
-export type SpreadType = 'daily' | 'past-present-future' | 'celtic-cross' | 'relationship';
 
 export const TAROT_CARDS: Card[] = [
   {
@@ -24,26 +23,26 @@ export const TAROT_CARDS: Card[] = [
   },
   {
     name: "Маг",
-    image: "/Cards-png/01-TheMagician.png",
-    description: "Проявление, сила воли, мастерство, вдохновение",
+    image: "/Cards-png/RWS_Tarot_01_Magician.png",
+    description: "Мастерство, сила воли, проявление",
     cardNumber: "I"
   },
   {
     name: "Верховная Жрица",
-    image: "/Cards-png/02-TheHighPriestess.png",
-    description: "Интуиция, тайные знания, внутренняя мудрость",
+    image: "/Cards-png/RWS_Tarot_02_High_Priestess.png",
+    description: "Интуиция, тайны, внутренняя мудрость",
     cardNumber: "II"
   },
   {
     name: "Императрица",
-    image: "/Cards-png/03-TheEmpress.png",
-    description: "Изобилие, творчество, материнство, природа",
+    image: "/Cards-png/RWS_Tarot_03_Empress.png",
+    description: "Изобилие, творчество, материнство",
     cardNumber: "III"
   },
   {
     name: "Император",
-    image: "/Cards-png/04-TheEmperor.png",
-    description: "Власть, структура, стабильность, достижения",
+    image: "/Cards-png/RWS_Tarot_04_Emperor.png",
+    description: "Власть, структура, стабильность",
     cardNumber: "IV"
   },
   {
@@ -225,4 +224,39 @@ export async function generatePrediction(spreadType: SpreadType = 'daily'): Prom
     text: SPREAD_DESCRIPTIONS[spreadType](selectedCards),
     spreadType
   };
+}
+
+export function getRandomCards(count: number): Card[] {
+  const shuffled = [...TAROT_CARDS].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
+
+export type SpreadId = 'daily' | 'past-present-future' | 'celtic-cross' | 'relationship'
+
+const POSITION_LABELS: Record<SpreadId, string[]> = {
+  'daily': ['Карта дня'],
+  'past-present-future': ['Прошлое', 'Настоящее', 'Будущее'],
+  'celtic-cross': [
+    'Текущая ситуация',
+    'Влияющие силы',
+    'Прошлое',
+    'Будущее',
+    'Сознательные мысли',
+    'Подсознательные влияния',
+    'Ваше влияние',
+    'Влияние окружения',
+    'Надежды и страхи',
+    'Итог'
+  ],
+  'relationship': [
+    'Вы',
+    'Партнер',
+    'Ваши чувства',
+    'Чувства партнера',
+    'Потенциал отношений'
+  ]
+}
+
+export function getPositionLabel(spreadId: SpreadId, position: number): string {
+  return POSITION_LABELS[spreadId]?.[position] || ''
 } 

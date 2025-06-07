@@ -8,6 +8,7 @@ import { useTelegram } from '@/components/TelegramProvider';
 import { generatePrediction } from '@/utils/predictions';
 import type { Prediction, SpreadType } from '@/utils/predictions';
 import { TarotCard } from '@/components/TarotCard';
+import { SpreadSelector } from '@/components/SpreadSelector';
 
 const SPREADS = [
   {
@@ -89,6 +90,10 @@ export default function PredictionPage() {
     }
   };
 
+  const handleSpreadSelect = (spread: SpreadType) => {
+    router.push(`/prediction/${spread.id}`);
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -115,34 +120,13 @@ export default function PredictionPage() {
             className="space-y-8"
           >
             <div className="text-center">
-              <h1 className="text-3xl font-bold mb-4">Выберите расклад</h1>
+              <h1 className="text-3xl font-bold mb-4 gold-text">Выберите расклад</h1>
               <p className="text-gray-400 mb-8">
                 Здравствуйте, {user?.first_name}! Выберите тип расклада, который лучше всего подходит для вашего вопроса
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {SPREADS.map((spread) => (
-                <button
-                  key={spread.id}
-                  onClick={() => setSelectedSpread(spread.id)}
-                  className={`p-6 rounded-lg text-left transition-all ${
-                    selectedSpread === spread.id
-                      ? 'bg-purple-600 ring-2 ring-purple-400'
-                      : 'bg-gray-800 hover:bg-gray-700'
-                  }`}
-                >
-                  <h3 className="text-xl font-semibold mb-2">{spread.name}</h3>
-                  <p className="text-gray-300 text-sm mb-4">{spread.description}</p>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400">{spread.cardCount} карт</span>
-                    {selectedSpread === spread.id && (
-                      <span className="text-purple-200">Выбрано ✓</span>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
+            <SpreadSelector onSelect={handleSpreadSelect} />
 
             <div className="text-center pt-6">
               <button
