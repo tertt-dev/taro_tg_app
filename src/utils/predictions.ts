@@ -154,7 +154,7 @@ export function getRandomCards(count: number): Card[] {
   return shuffled.slice(0, count)
 }
 
-export type SpreadId = 'daily' | 'past-present-future' | 'celtic-cross' | 'relationship'
+export type SpreadId = 'daily' | 'past-present-future' | 'celtic-cross' | 'relationship' | 'random' | 'love' | 'work'
 
 const POSITION_LABELS: Record<SpreadId, string[]> = {
   'daily': ['Карта дня'],
@@ -177,7 +177,10 @@ const POSITION_LABELS: Record<SpreadId, string[]> = {
     'Ваши чувства',
     'Чувства партнера',
     'Потенциал отношений'
-  ]
+  ],
+  'random': ['Случайная карта'],
+  'love': ['Чувства', 'Препятствия', 'Перспектива'],
+  'work': ['Текущее положение', 'Вызовы', 'Совет']
 }
 
 export function getPositionLabel(spreadId: SpreadId, position: number): string {
@@ -202,7 +205,20 @@ const SPREAD_DESCRIPTIONS: Record<SpreadId, (cards: Card[]) => string> = {
     `Ваша позиция отражена в карте ${cards[0].name.toLowerCase()}, что указывает на ${cards[0].description.toLowerCase()}. ` +
     `Партнёр представлен картой ${cards[1].name.toLowerCase()}. ` +
     `Ваши отношения характеризует ${cards[2].name.toLowerCase()}, ` +
-    `а потенциал развития показывает ${cards[4].name.toLowerCase()}.`
+    `а потенциал развития показывает ${cards[4].name.toLowerCase()}.`,
+  
+  'random': (cards) =>
+    `${cards[0].name} показывает ${cards[0].description.toLowerCase()}.`,
+  
+  'love': (cards) =>
+    `Ваши чувства отражает ${cards[0].name.toLowerCase()}: ${cards[0].description.toLowerCase()}. ` +
+    `Препятствия представлены картой ${cards[1].name.toLowerCase()}: ${cards[1].description.toLowerCase()}. ` +
+    `Перспектива отношений - ${cards[2].name.toLowerCase()}: ${cards[2].description.toLowerCase()}.`,
+  
+  'work': (cards) =>
+    `Текущее положение: ${cards[0].name.toLowerCase()} - ${cards[0].description.toLowerCase()}. ` +
+    `Вызовы: ${cards[1].name.toLowerCase()} - ${cards[1].description.toLowerCase()}. ` +
+    `Совет: ${cards[2].name.toLowerCase()} - ${cards[2].description.toLowerCase()}.`
 }
 
 export async function generatePrediction(spread: SpreadType): Promise<Prediction> {
